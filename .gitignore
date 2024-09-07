@@ -1,6 +1,6 @@
 .idea
 target
-tg-bot/src/main/resources/
+tg-bot/src/main/resources/*-local.properties
 .env
 /node_modules/
 /web/react-app/build/
