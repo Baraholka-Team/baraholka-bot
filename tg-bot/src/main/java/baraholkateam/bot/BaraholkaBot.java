@@ -300,7 +300,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements TgFil
         // Случай получения информации с кнопок (инлайн-клавиатуры)
         if (update.hasCallbackQuery()) {
             CallbackQuery callbackQuery = update.getCallbackQuery();
-            msg = callbackQuery.getMessage();
+            msg = (Message) callbackQuery.getMessage();
             String callbackQueryData = callbackQuery.getData();
             parseKeyboardData(callbackQueryData, msg);
             return;

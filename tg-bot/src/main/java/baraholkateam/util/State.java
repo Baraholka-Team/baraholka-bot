@@ -1,7 +1,5 @@
 package baraholkateam.util;
 
-import com.google.common.collect.ImmutableMap;
-
 import java.util.Map;
 import java.util.Objects;
 
@@ -44,52 +42,52 @@ public enum State {
     }
 
     private static Map<State, State> getNextStates() {
-        return ImmutableMap.<State, State>builder()
-                .put(SearchAdvertisements, SearchAdvertisements_AddAdvertisementTypes)
-                .put(SearchAdvertisements_AddAdvertisementTypes, SearchAdvertisements_AddProductCategories)
-                .put(SearchAdvertisements_AddProductCategories, SearchAdvertisements_ShowFoundAdvertisements)
-                .put(NewAdvertisement, NewAdvertisement_AddPhotos)
-                .put(NewAdvertisement_AddPhotos, NewAdvertisement_ConfirmPhoto)
-                .put(NewAdvertisement_ConfirmPhoto, NewAdvertisement_AddDescription)
-                .put(NewAdvertisement_AddDescription, NewAdvertisement_AddCity)
-                .put(NewAdvertisement_AddCity, NewAdvertisement_AddAdvertisementTypes)
-                .put(NewAdvertisement_AddAdvertisementTypes, NewAdvertisement_AddCategories)
-                .put(NewAdvertisement_AddCategories, NewAdvertisement_AddPrice)
-                .put(NewAdvertisement_AddPrice, NewAdvertisement_ConfirmPrice)
-                .put(NewAdvertisement_ConfirmPrice, NewAdvertisement_AddContacts)
-                .put(NewAdvertisement_AddContacts, NewAdvertisement_AddPhone)
-                .put(NewAdvertisement_AddPhone, NewAdvertisement_ConfirmPhone)
-                .put(NewAdvertisement_ConfirmPhone, NewAdvertisement_AddSocial)
-                .put(NewAdvertisement_AddSocial, NewAdvertisement_Confirm)
-                .build();
+        return Map.ofEntries(
+                Map.entry(SearchAdvertisements, SearchAdvertisements_AddAdvertisementTypes),
+                Map.entry(SearchAdvertisements_AddAdvertisementTypes, SearchAdvertisements_AddProductCategories),
+                Map.entry(SearchAdvertisements_AddProductCategories, SearchAdvertisements_ShowFoundAdvertisements),
+                Map.entry(NewAdvertisement, NewAdvertisement_AddPhotos),
+                Map.entry(NewAdvertisement_AddPhotos, NewAdvertisement_ConfirmPhoto),
+                Map.entry(NewAdvertisement_ConfirmPhoto, NewAdvertisement_AddDescription),
+                Map.entry(NewAdvertisement_AddDescription, NewAdvertisement_AddCity),
+                Map.entry(NewAdvertisement_AddCity, NewAdvertisement_AddAdvertisementTypes),
+                Map.entry(NewAdvertisement_AddAdvertisementTypes, NewAdvertisement_AddCategories),
+                Map.entry(NewAdvertisement_AddCategories, NewAdvertisement_AddPrice),
+                Map.entry(NewAdvertisement_AddPrice, NewAdvertisement_ConfirmPrice),
+                Map.entry(NewAdvertisement_ConfirmPrice, NewAdvertisement_AddContacts),
+                Map.entry(NewAdvertisement_AddContacts, NewAdvertisement_AddPhone),
+                Map.entry(NewAdvertisement_AddPhone, NewAdvertisement_ConfirmPhone),
+                Map.entry(NewAdvertisement_ConfirmPhone, NewAdvertisement_AddSocial),
+                Map.entry(NewAdvertisement_AddSocial, NewAdvertisement_Confirm)
+        );
     }
 
     private static Map<State, State> getPreviousState() {
-        return ImmutableMap.<State, State>builder()
-                .put(Start, Start)
-                .put(Help, MainMenu)
-                .put(MainMenu, MainMenu)
-                .put(UserAdvertisements, MainMenu)
-                .put(NewAdvertisement, MainMenu)
-                .put(DeleteAdvertisement, MainMenu)
-                .put(NewAdvertisement_AddPhotos, NewAdvertisement)
-                .put(NewAdvertisement_ConfirmPhoto, NewAdvertisement_AddPhotos)
-                .put(NewAdvertisement_AddDescription, NewAdvertisement_AddPhotos)
-                .put(NewAdvertisement_AddCity, NewAdvertisement_AddDescription)
-                .put(NewAdvertisement_AddAdvertisementTypes, NewAdvertisement_AddCity)
-                .put(NewAdvertisement_AddCategories, NewAdvertisement_AddCity)
-                .put(NewAdvertisement_AddPrice, NewAdvertisement_AddCity)
-                .put(NewAdvertisement_ConfirmPrice, NewAdvertisement_AddPrice)
-                .put(NewAdvertisement_AddContacts, NewAdvertisement_AddPrice)
-                .put(NewAdvertisement_AddPhone, NewAdvertisement_AddContacts)
-                .put(NewAdvertisement_ConfirmPhone, NewAdvertisement_AddContacts)
-                .put(NewAdvertisement_AddSocial, NewAdvertisement_AddContacts)
-                .put(NewAdvertisement_Confirm, NewAdvertisement_AddContacts)
-                .put(SearchAdvertisements, MainMenu)
-                .put(SearchAdvertisements_AddAdvertisementTypes, SearchAdvertisements)
-                .put(SearchAdvertisements_AddProductCategories, SearchAdvertisements_AddAdvertisementTypes)
-                .put(SearchAdvertisements_ShowFoundAdvertisements, SearchAdvertisements_AddProductCategories)
-                .build();
+        return Map.ofEntries(
+                Map.entry(Start, Start),
+                Map.entry(Help, MainMenu),
+                Map.entry(MainMenu, MainMenu),
+                Map.entry(UserAdvertisements, MainMenu),
+                Map.entry(NewAdvertisement, MainMenu),
+                Map.entry(DeleteAdvertisement, MainMenu),
+                Map.entry(NewAdvertisement_AddPhotos, NewAdvertisement),
+                Map.entry(NewAdvertisement_ConfirmPhoto, NewAdvertisement_AddPhotos),
+                Map.entry(NewAdvertisement_AddDescription, NewAdvertisement_AddPhotos),
+                Map.entry(NewAdvertisement_AddCity, NewAdvertisement_AddDescription),
+                Map.entry(NewAdvertisement_AddAdvertisementTypes, NewAdvertisement_AddCity),
+                Map.entry(NewAdvertisement_AddCategories, NewAdvertisement_AddCity),
+                Map.entry(NewAdvertisement_AddPrice, NewAdvertisement_AddCity),
+                Map.entry(NewAdvertisement_ConfirmPrice, NewAdvertisement_AddPrice),
+                Map.entry(NewAdvertisement_AddContacts, NewAdvertisement_AddPrice),
+                Map.entry(NewAdvertisement_AddPhone, NewAdvertisement_AddContacts),
+                Map.entry(NewAdvertisement_ConfirmPhone, NewAdvertisement_AddContacts),
+                Map.entry(NewAdvertisement_AddSocial, NewAdvertisement_AddContacts),
+                Map.entry(NewAdvertisement_Confirm, NewAdvertisement_AddContacts),
+                Map.entry(SearchAdvertisements, MainMenu),
+                Map.entry(SearchAdvertisements_AddAdvertisementTypes, SearchAdvertisements),
+                Map.entry(SearchAdvertisements_AddProductCategories, SearchAdvertisements_AddAdvertisementTypes),
+                Map.entry(SearchAdvertisements_ShowFoundAdvertisements, SearchAdvertisements_AddProductCategories)
+        );
     }
 
     public String getIdentifier() {
