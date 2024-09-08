@@ -1,7 +1,12 @@
 package baraholkateam.util;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 import java.util.Objects;
 
+@Getter
+@AllArgsConstructor
 public enum Tag {
     Moscow(TagType.City, "#Москва"),
     SPB(TagType.City, "#СПб"),
@@ -38,19 +43,6 @@ public enum Tag {
     private final TagType tagType;
     private final String name;
 
-    Tag(TagType tagType, String name) {
-        this.tagType = tagType;
-        this.name = name;
-    }
-
-    public TagType getTagType() {
-        return tagType;
-    }
-
-    public String getName() {
-        return name;
-    }
-
     public static Tag getTagByName(String name) {
         for (Tag tag : Tag.values()) {
             if (Objects.equals(tag.name, name)) {
@@ -59,4 +51,5 @@ public enum Tag {
         }
         return null;
     }
+
 }

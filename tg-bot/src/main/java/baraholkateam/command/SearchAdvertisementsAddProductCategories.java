@@ -16,14 +16,13 @@ import java.util.stream.Collectors;
 
 @Component
 public class SearchAdvertisementsAddProductCategories extends Command {
+
     private static final String CHOOSE_PRODUCT_CATEGORY = """
             Выберите категории товаров.
             Вы можете выбрать несколько хэштегов, нажав на них, либо не выбрать ни один.
             Для подтверждения выбора, нажмите на кнопку '%s'.""";
-
     @Autowired
     private ChosenTagsService chosenTagsService;
-
     @Autowired
     private PreviousStateService previousStateService;
 
@@ -54,4 +53,5 @@ public class SearchAdvertisementsAddProductCategories extends Command {
                     String.format(INCORRECT_PREVIOUS_STATE, State.MainMenu.getIdentifier()), null);
         }
     }
+
 }

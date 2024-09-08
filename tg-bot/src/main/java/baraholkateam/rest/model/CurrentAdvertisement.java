@@ -9,8 +9,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -20,6 +20,7 @@ import java.util.Objects;
 /**
  * Текущее создаваемое объявление.
  */
+@Slf4j
 @Entity
 @Table(name = "current_advertisement")
 public class CurrentAdvertisement implements Serializable {
@@ -29,8 +30,6 @@ public class CurrentAdvertisement implements Serializable {
     private static final String PHONE_NUMBER = "Номер телефона: <span class=\"tg-spoiler\">%s</span>";
     private static final String CONTACTS = "Контакты: ";
     private static final String CONTACT = "<span class=\"tg-spoiler\">%s</span>";
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(CurrentAdvertisement.class);
 
     @Id
     @Column(name = "chat_id")
@@ -44,6 +43,7 @@ public class CurrentAdvertisement implements Serializable {
     /**
      * Список фотографий в виде Base64 строк.
      */
+    @Getter
     @Lob
     @Column(name = "photos", length = Integer.MAX_VALUE)
     @JsonProperty("photos")
@@ -57,14 +57,17 @@ public class CurrentAdvertisement implements Serializable {
     @JsonProperty("tags")
     private List<String> tags = new ArrayList<>();
 
+    @Getter
     @Column(name = "price")
     @JsonProperty("price")
     private Long price;
 
+    @Getter
     @Column(name = "phone", length = 16)
     @JsonProperty("phone")
     private String phone;
 
+    @Getter
     @Column(name = "contacts", length = 256)
     @JsonProperty("contacts")
     private List<String> contacts = new ArrayList<>();
@@ -80,10 +83,6 @@ public class CurrentAdvertisement implements Serializable {
     @Column(name = "update_attempt")
     @JsonIgnore
     private Integer updateAttempt;
-
-    public CurrentAdvertisement() {
-
-    }
 
     public CurrentAdvertisement(Long chatId) {
         this.tags.add(Tag.Actual.getName());
@@ -103,28 +102,28 @@ public class CurrentAdvertisement implements Serializable {
 
     public Long getChatId() {
         if (chatId == null) {
-            LOGGER.error("Field 'chatId' of the current advertisement is null!");
+            log.error("Field 'chatId' of the current advertisement is null!");
         }
         return chatId;
     }
 
     public Long getMessageId() {
         if (messageId == null) {
-            LOGGER.error("Field 'messageId' of the current advertisement is null!");
+            log.error("Field 'messageId' of the current advertisement is null!");
         }
         return messageId;
     }
 
     public String getDescription() {
         if (description == null) {
-            LOGGER.error("Field 'description' of the current advertisement is null!");
+            log.error("Field 'description' of the current advertisement is null!");
         }
         return description;
     }
 
     public List<String> getTags() {
         if (tags.isEmpty()) {
-            LOGGER.error("Field 'tags' of the current advertisement is null!");
+            log.error("Field 'tags' of the current advertisement is null!");
         }
         return tags;
     }
@@ -144,41 +143,25 @@ public class CurrentAdvertisement implements Serializable {
         return sb.toString();
     }
 
-    public Long getPrice() {
-        return price;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public List<String> getContacts() {
-        return contacts;
-    }
-
     public Long getCreationTime() {
         if (creationTime == null) {
-            LOGGER.error("Field 'creationTime' of the current advertisement is null!");
+            log.error("Field 'creationTime' of the current advertisement is null!");
         }
         return creationTime;
     }
 
     public Long getNextUpdateTime() {
         if (nextUpdateTime == null) {
-            LOGGER.error("Field 'nextUpdateTime' of the current advertisement is null!");
+            log.error("Field 'nextUpdateTime' of the current advertisement is null!");
         }
         return nextUpdateTime;
     }
 
     public Integer getUpdateAttempt() {
         if (updateAttempt == null) {
-            LOGGER.error("Field 'updateAttempt' of the current advertisement is null!");
+            log.error("Field 'updateAttempt' of the current advertisement is null!");
         }
         return updateAttempt;
-    }
-
-    public List<String> getPhotos() {
-        return photos;
     }
 
     public CurrentAdvertisement setMessageId(Long messageId) {
@@ -281,7 +264,7 @@ public class CurrentAdvertisement implements Serializable {
         }
 
         List<String> contacts = this.getContacts();
-        if (contacts.size() > 0) {
+        if (!contacts.isEmpty()) {
             if (phone == null) {
                 sb.append("-".repeat(50));
             }
@@ -291,11 +274,12 @@ public class CurrentAdvertisement implements Serializable {
             for (String contact : contacts) {
                 contactsString.append(String.format(CONTACT, contact)).append(",\n");
             }
-            if (contactsString.length() > 0) {
+            if (!contactsString.isEmpty()) {
                 contactsString.setLength(contactsString.length() - 2);
             }
             sb.append(contactsString);
         }
         return sb.toString();
     }
+
 }

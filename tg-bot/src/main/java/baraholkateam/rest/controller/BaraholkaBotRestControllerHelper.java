@@ -10,9 +10,8 @@ import baraholkateam.telegram_api_requests.TelegramAPIRequests;
 import baraholkateam.util.Tag;
 import baraholkateam.util.TelegramUserInfo;
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -41,36 +40,24 @@ import static baraholkateam.command.DeleteAdvertisement.NOT_ACTUAL_TEXT;
 import static baraholkateam.notification.NotificationExecutor.FIRST_REPEAT_NOTIFICATION_PERIOD;
 import static baraholkateam.notification.NotificationExecutor.FIRST_REPEAT_NOTIFICATION_TIME_UNIT;
 
+@Slf4j
 @Component
 public class BaraholkaBotRestControllerHelper {
 
     @Autowired
     private TelegramAPIRequests telegramAPIRequests;
-
     @Autowired
     private CurrentAdvertisementService currentAdvertisementService;
-
     @Autowired
     private ActualAdvertisementService actualAdvertisementService;
-
     @Autowired
     private NewAdvertisementConfirm newAdvertisementConfirm;
-
     @Autowired
     private BaraholkaBot baraholkaBot;
-
     @Value("${bot.token}")
     private String botToken;
-
     @Value("${channel.chat_id}")
     private String channelChatId;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(BaraholkaBotRestControllerHelper.class);
-
-    @Autowired
-    public BaraholkaBotRestControllerHelper() {
-
-    }
 
     boolean checkUserRights(TelegramUserInfo userInfo) {
         try {
@@ -86,12 +73,12 @@ public class BaraholkaBotRestControllerHelper {
                             .getBytes(StandardCharsets.UTF_8)
             ));
 
-            return calculatedHash.equals(userInfo.getHash());
+            return calculatedHash.equals(userInfo.hash());
         } catch (NoSuchAlgorithmException e) {
-            LOGGER.error("No such algorithm", e);
+            log.error("No such algorithm", e);
             return false;
         } catch (InvalidKeyException e) {
-            LOGGER.error("Invalid key", e);
+            log.error("Invalid key", e);
             return false;
         }
     }
@@ -152,7 +139,7 @@ public class BaraholkaBotRestControllerHelper {
     }
 
     boolean addNewAdvertisement(CurrentAdvertisement currentAdvertisement, JsonNode json) {
-        if (currentAdvertisement.getContacts().size() == 0 && currentAdvertisement.getPhone() == null) {
+        if (currentAdvertisement.getContacts().isEmpty() && currentAdvertisement.getPhone() == null) {
             currentAdvertisement.setSocials(List.of("@"
                     + telegramAPIRequests.getUser(currentAdvertisement.getChatId()).username()));
         }
@@ -177,7 +164,7 @@ public class BaraholkaBotRestControllerHelper {
                         currentAdvertisementService.getAdvertisementText(currentAdvertisement.getChatId())
                 );
             } catch (IOException e) {
-                LOGGER.error("Cannot send photo", e);
+                log.error("Cannot send photo", e);
                 return false;
             }
         } else {
@@ -189,7 +176,7 @@ public class BaraholkaBotRestControllerHelper {
                     Files.write(Path.of(file.getPath()), Base64.getDecoder().decode(fileString));
                     photoFiles.add(file);
                 } catch (IOException e) {
-                    LOGGER.error("Cannot send photos", e);
+                    log.error("Cannot send photos", e);
                     return false;
                 }
             }
@@ -217,7 +204,7 @@ public class BaraholkaBotRestControllerHelper {
 
             return true;
         }
-        LOGGER.error("Cannot send advertisement to channel.");
+        log.error("Cannot send advertisement to channel.");
         return false;
     }
 

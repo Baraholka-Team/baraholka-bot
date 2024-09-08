@@ -18,6 +18,7 @@ import static baraholkateam.rest.model.ActualAdvertisement.DESCRIPTION_TEXT;
 
 @Component
 public class DeleteAdvertisement extends Command {
+
     public static final String NOT_ACTUAL_TEXT = "<b>НЕАКТУАЛЬНО</b>";
     public static final String USER_ACTUAL_ADS_TEXT = """
             Здесь представлены краткие описания Ваших актуальных объявлений.
@@ -26,7 +27,6 @@ public class DeleteAdvertisement extends Command {
             Удалить выбранное объявление?""";
     private static final String NO_ADS_TO_DELETE = """
             У вас нет актуальных объявлений.""";
-
     @Autowired
     private ActualAdvertisementService actualAdvertisementService;
 
@@ -72,4 +72,5 @@ public class DeleteAdvertisement extends Command {
 
         return inlineKeyboardMarkup;
     }
+
 }

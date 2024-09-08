@@ -3,8 +3,7 @@ package baraholkateam.rest.service;
 import baraholkateam.rest.model.CurrentState;
 import baraholkateam.rest.repository.CurrentStateRepository;
 import baraholkateam.util.State;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,10 +12,9 @@ import java.util.Optional;
 /**
  * Сервис взаимодействия с сущностью "CurrentState".
  */
+@Slf4j
 @Service
 public class CurrentStateService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(CurrentStateService.class);
 
     @Autowired
     private CurrentStateRepository currentStateRepository;
@@ -26,7 +24,7 @@ public class CurrentStateService {
         if (currentStateRepositoryOptional.isPresent()) {
             return currentStateRepositoryOptional.get().getState();
         } else {
-            LOGGER.error(String.format("Current state for chat %d not found!", chatId));
+            log.error("Current state for chat {} not found!", chatId);
             return null;
         }
     }
@@ -34,4 +32,5 @@ public class CurrentStateService {
     public void put(Long chatId, State state) {
         currentStateRepository.save(new CurrentState(chatId, state));
     }
+
 }

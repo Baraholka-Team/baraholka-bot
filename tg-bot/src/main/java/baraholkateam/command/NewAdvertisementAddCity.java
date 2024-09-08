@@ -17,15 +17,14 @@ import java.util.List;
 
 @Component
 public class NewAdvertisementAddCity extends Command {
+
     private static final String ADD_HASHTAGS_TEXT = """
             Описание успешно добавлено.
             Теперь необходимо добавить хэштеги.""";
     private static final String ADD_CITY_TEXT = """
             Выберите город, который хотите добавить:""";
-
     @Autowired
     private CurrentAdvertisementService currentAdvertisementService;
-
     @Autowired
     private ChosenTagsService chosenTagsService;
 
@@ -42,4 +41,5 @@ public class NewAdvertisementAddCity extends Command {
         sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
                 ADD_CITY_TEXT, getTags(TagType.City, false));
     }
+
 }

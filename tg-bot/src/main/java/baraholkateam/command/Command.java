@@ -4,8 +4,7 @@ import baraholkateam.rest.service.LastSentMessageService;
 import baraholkateam.util.State;
 import baraholkateam.util.Tag;
 import baraholkateam.util.TagType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand;
@@ -24,8 +23,10 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Component
 public abstract class Command extends BotCommand {
+
     public static final String BACK_BUTTON = "Назад";
     public static final String NEXT_BUTTON_TEXT = "Продолжить";
     public static final String NOT_CHOSEN_TAG = "➖ %s";
@@ -70,8 +71,6 @@ public abstract class Command extends BotCommand {
             Невозможно выполнить текущую команду.
             Пожалуйста, вернитесь в главное меню /%s и попробуйте снова.""";
     static final String NO_HASHTAGS = "➖";
-    private static final Logger LOGGER = LoggerFactory.getLogger(Command.class);
-
     @Autowired
     private LastSentMessageService lastSentMessageService;
 
@@ -105,8 +104,7 @@ public abstract class Command extends BotCommand {
             Message sentMessage = absSender.execute(message);
             lastSentMessageService.put(chatId, sentMessage);
         } catch (TelegramApiException e) {
-            LOGGER.error(String.format("Cannot execute command %s of user %s: %s", commandName, userName,
-                    e.getMessage()));
+            log.error("Cannot execute command {} of user {}: {}", commandName, userName, e.getMessage());
         }
     }
 
@@ -219,4 +217,5 @@ public abstract class Command extends BotCommand {
 
         return lines;
     }
+
 }

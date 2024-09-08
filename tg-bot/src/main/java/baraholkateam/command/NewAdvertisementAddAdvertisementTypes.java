@@ -11,11 +11,11 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 
 @Component
 public class NewAdvertisementAddAdvertisementTypes extends Command {
+
     private static final String CHOSEN_CITY = """
             Текущий выбранный город: %s""";
     private static final String ADD_TYPE_TEXT = """
             Выберите категории, наиболее подходящие для описания вашего товара:""";
-
     @Autowired
     private CurrentAdvertisementService currentAdvertisementService;
 
@@ -32,4 +32,5 @@ public class NewAdvertisementAddAdvertisementTypes extends Command {
         sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
                 ADD_TYPE_TEXT, getTags(TagType.AdvertisementType, true));
     }
+
 }

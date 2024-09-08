@@ -1,5 +1,7 @@
 package baraholkateam.util;
 
+import lombok.Getter;
+
 import java.util.Map;
 import java.util.Objects;
 
@@ -31,7 +33,9 @@ public enum State {
     SearchAdvertisements_ShowFoundAdvertisements("show_found_advertisements",
             "Вывод найденных объявлений");
 
+    @Getter
     private final String identifier;
+    @Getter
     private final String description;
     private static final Map<State, State> NEXT_STATE = getNextStates();
     private static final Map<State, State> PREVIOUS_STATE = getPreviousState();
@@ -90,14 +94,6 @@ public enum State {
         );
     }
 
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
     public static State findState(String text) {
         for (State state : State.values()) {
             if (Objects.equals(state.getIdentifier(), text)) {
@@ -131,4 +127,5 @@ public enum State {
         State previousState = PREVIOUS_STATE.get(currentState);
         return previousState == null ? currentState : previousState;
     }
+
 }

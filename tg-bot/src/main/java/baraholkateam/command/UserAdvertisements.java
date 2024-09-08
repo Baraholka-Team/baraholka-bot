@@ -16,18 +16,15 @@ import java.util.List;
 
 @Component
 public class UserAdvertisements extends Command {
+
     private static final String NO_ADVERTISEMENTS = "Пользователь не опубликовал ни одного объявления.";
     private static final String USER_ADVERTISEMENTS = "Опубликованные актуальные объявления пользователя:";
-
     @Autowired
     private TelegramAPIRequests telegramAPIRequests;
-
     @Autowired
     private ActualAdvertisementRepository actualAdvertisementRepository;
-
     @Autowired
     private LastSentMessageService lastSentMessageService;
-
     @Value("${channel.chat_id}")
     private String channelChatId;
 
@@ -55,4 +52,5 @@ public class UserAdvertisements extends Command {
                     NO_ADVERTISEMENTS, null);
         }
     }
+
 }

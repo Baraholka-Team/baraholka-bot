@@ -10,6 +10,7 @@ import java.util.Collections;
 
 @Component
 public class NewAdvertisementAddPhotos extends Command {
+
     private static final String ADD_PHOTOS_TEXT = """
             Добавьте от 1 до 10 фотографий к вашему объявлению. Рекомендуемое число - 5.""";
 
@@ -22,4 +23,5 @@ public class NewAdvertisementAddPhotos extends Command {
         sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
                 ADD_PHOTOS_TEXT, getReplyKeyboard(Collections.emptyList(), true));
     }
+
 }

@@ -14,6 +14,7 @@ import java.util.Objects;
 
 @Component
 public class NewAdvertisementAddPrice extends Command {
+
     private static final String CHOSEN_CATEGORIES = """
             Выбраны категории товаров: %s""";
     private static final String ADD_PRICE_TEXT = """
@@ -48,4 +49,5 @@ public class NewAdvertisementAddPrice extends Command {
         sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
                 ADD_PRICE_TEXT, getReplyKeyboard(Collections.emptyList(), true));
     }
+
 }

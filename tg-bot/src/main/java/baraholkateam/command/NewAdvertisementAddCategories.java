@@ -13,11 +13,11 @@ import java.util.Objects;
 
 @Component
 public class NewAdvertisementAddCategories extends Command {
+
     private static final String CHOSEN_ADVERTISEMENT_TYPES = """
             Выбраны категории объявлений: %s""";
     private static final String ADD_CATEGORIES_TEXT = """
             Теперь выберите категории, наиболее подходящие для описания вашего товара.""";
-
     @Autowired
     private CurrentAdvertisementService currentAdvertisementService;
 
@@ -47,4 +47,5 @@ public class NewAdvertisementAddCategories extends Command {
         sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
                 ADD_CATEGORIES_TEXT, getTags(TagType.ProductCategories, true));
     }
+
 }

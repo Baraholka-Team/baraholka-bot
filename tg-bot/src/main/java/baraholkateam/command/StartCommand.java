@@ -11,6 +11,7 @@ import java.util.List;
 
 @Component
 public class StartCommand extends Command {
+
     private static final String START_ANSWER = """
             Добро пожаловать в бот по созданию и размещению объявлений!
             Вы можете начать создавать новое объявление при помощи команды /%s.
@@ -43,4 +44,5 @@ public class StartCommand extends Command {
                 State.Help.getDescription()
         ), false);
     }
+
 }

@@ -6,8 +6,7 @@ import baraholkateam.rest.service.ActualAdvertisementService;
 import baraholkateam.rest.service.NotificationMessagesService;
 import baraholkateam.telegram_api_requests.TelegramAPIRequests;
 import baraholkateam.util.Tag;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,36 +35,32 @@ import static baraholkateam.command.Command.ADVERTISEMENT_DELETE;
 import static baraholkateam.command.Command.NOTIFICATION_CALLBACK_DATA;
 import static baraholkateam.command.DeleteAdvertisement.NOT_ACTUAL_TEXT;
 
+@Slf4j
 @Component
 public class NotificationExecutor {
+
     private static final String DELETE_IF_NOT_UPDATE = """
             Вы пропустили 2 уведомления с вопросом об актуальности объявления.
             Через %s часов объявление будет автоматически удалено, если не подтвердить его актуальность.""";
     private static final String ASK_NEXT_UPDATE = """
             Является ли данное объявление актуальным?""";
     private static final String CANNOT_FORWARD_MESSAGE = "Невозможно переслать объявление из канала.";
-
     /**
      * Период времени до первого уведомления пользователя о подтверждении актуальности объявления.
      */
     public static final Long FIRST_REPEAT_NOTIFICATION_PERIOD = 14L;
-
     /**
      * Период времени до первого уведомления пользователя о подтверждении актуальности объявления.
      */
     public static final TimeUnit FIRST_REPEAT_NOTIFICATION_TIME_UNIT = TimeUnit.DAYS;
-
     /**
      * Период времени до повторных уведомлений пользователя о подтверждении актуальности объявления.
      */
     private static final Long REPEAT_NOTIFICATION_PERIOD = 24L;
-
     /**
      * Период времени до повторных уведомлений пользователя о подтверждении актуальности объявления.
      */
     private static final TimeUnit REPEAT_NOTIFICATION_TIME_UNIT = TimeUnit.HOURS;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationExecutor.class);
 
     @Autowired
     private TelegramAPIRequests telegramAPIRequests;
@@ -110,7 +105,7 @@ public class NotificationExecutor {
                         telegramAPIRequests.forwardMessage(channelUsername, String.valueOf(chatId), messageId);
 
                 if (forwardedMessageId == null) {
-                    LOGGER.error(CANNOT_FORWARD_MESSAGE);
+                    log.error(CANNOT_FORWARD_MESSAGE);
                     break;
                 }
 
@@ -139,10 +134,7 @@ public class NotificationExecutor {
 
                 addNotificationMessage(forwardedMessage, chatId, messageId);
             } else {
-                LOGGER.error(
-                        String.format("Incorrect number of update attempt: %d. Chat id: %d, message id: %d",
-                                attemptNum, chatId, messageId)
-                );
+                log.error("Incorrect number of update attempt: {}. Chat id: {}, message id: {}", attemptNum, chatId, messageId);
             }
         }
     }
@@ -156,7 +148,7 @@ public class NotificationExecutor {
                 try {
                     absSender.execute(deleteLastMessage);
                 } catch (TelegramApiException e) {
-                    LOGGER.error(String.format("Cannot delete message due to: %s", e.getMessage()));
+                    log.error("Cannot delete message due to: {}", e.getMessage());
                 }
             }
             notificationMessagesService.removeMessage(chatId, messageId);
@@ -175,7 +167,7 @@ public class NotificationExecutor {
             Message sendedMessage = sender.execute(message);
             addNotificationMessage(sendedMessage, chatId, messageId);
         } catch (TelegramApiException e) {
-            LOGGER.error(String.format("Cannot send message: %s", e.getMessage()));
+            log.error("Cannot send message: {}", e.getMessage());
         }
     }
 
@@ -190,7 +182,7 @@ public class NotificationExecutor {
         try {
             sender.execute(message);
         } catch (TelegramApiException e) {
-            LOGGER.error(String.format("Cannot send message: %s", e.getMessage()));
+            log.error("Cannot send message without delete: {}", e.getMessage());
         }
     }
 
@@ -247,7 +239,8 @@ public class NotificationExecutor {
         try {
             absSender.execute(editMessage);
         } catch (TelegramApiException e) {
-            LOGGER.error(String.format("Cannot edit deleted message: %s", e.getMessage()));
+            log.error("Cannot edit deleted message: {}", e.getMessage());
         }
     }
+
 }

@@ -25,6 +25,7 @@ import static baraholkateam.bot.BaraholkaBot.SEARCH_ADVERTISEMENTS_LIMIT;
 
 @Component
 public class SearchAdvertisementsShowFoundAdvertisements extends Command {
+
     private static final String CANNOT_FIND_ADVERTISEMENTS = """
             По Вашему запросу ничего не нашлось.
             Вы можете вернуться в главное меню /%s или найти объявления по другим хэштегам /%s.""";
@@ -32,19 +33,14 @@ public class SearchAdvertisementsShowFoundAdvertisements extends Command {
             По Вашему запросу нашлось объявлений: %d.
             Показывается не более %s самых актуальных объявлений.
             Вы можете вернуться в главное меню /%s или найти объявления по другим хэштегам /%s.""";
-
     @Autowired
     private ChosenTagsService chosenTagsService;
-
     @Autowired
     private TelegramAPIRequests telegramAPIRequests;
-
     @Autowired
     private ActualAdvertisementService actualAdvertisementService;
-
     @Autowired
     private PreviousStateService previousStateService;
-
     @Value("${channel.username}")
     private String channelUsername;
 
@@ -123,4 +119,5 @@ public class SearchAdvertisementsShowFoundAdvertisements extends Command {
         rkm.setKeyboard(commandButtons);
         return rkm;
     }
+
 }

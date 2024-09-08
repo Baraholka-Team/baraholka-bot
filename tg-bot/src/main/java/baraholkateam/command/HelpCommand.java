@@ -10,6 +10,7 @@ import java.util.List;
 
 @Component
 public class HelpCommand extends Command {
+
     private static final String HELP_INFO = """
             Полный список команд:
             %s""";
@@ -43,4 +44,5 @@ public class HelpCommand extends Command {
         }
         return result.toString();
     }
+
 }

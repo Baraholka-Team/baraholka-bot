@@ -10,6 +10,7 @@ import java.util.Collections;
 
 @Component
 public class NewAdvertisementAddDescription extends Command {
+
     private static final String ADD_DESCRIPTION_TEXT = """
             Введите краткое описание товара (не более 800 символов):""";
 
@@ -23,4 +24,5 @@ public class NewAdvertisementAddDescription extends Command {
         sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
                 ADD_DESCRIPTION_TEXT, getReplyKeyboard(Collections.emptyList(), true));
     }
+
 }

@@ -3,8 +3,7 @@ package baraholkateam.command;
 import baraholkateam.rest.service.CurrentAdvertisementService;
 import baraholkateam.rest.service.LastSentMessageService;
 import baraholkateam.util.State;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -17,8 +16,10 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
 
+@Slf4j
 @Component
 public class NewAdvertisementConfirmPhoto extends Command {
+
     public static final String DELETE_ALL_PHOTOS = "Удалить все фотографии";
     private static final String CONFIRM_PHOTOS_TEXT = """
             Общее количество добавленных фотографий: %s.
@@ -27,7 +28,6 @@ public class NewAdvertisementConfirmPhoto extends Command {
     private static final String NO_MORE_CONFIRM_PHOTOS_TEXT = """
             Общее количество добавленных фотографий: %s.
             Пожалуйста, перейдите к описанию.""";
-    private static final Logger LOGGER = LoggerFactory.getLogger(NewAdvertisementConfirmPhoto.class);
 
     @Autowired
     private LastSentMessageService lastSentMessageService;
@@ -52,7 +52,7 @@ public class NewAdvertisementConfirmPhoto extends Command {
             try {
                 absSender.execute(deleteMessage);
             } catch (TelegramApiException e) {
-                LOGGER.error("Cannot delete message", e);
+                log.error("Cannot delete message", e);
             }
         }
 
@@ -79,4 +79,5 @@ public class NewAdvertisementConfirmPhoto extends Command {
                 DELETE_ALL_PHOTOS
         ), true);
     }
+
 }

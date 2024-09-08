@@ -3,8 +3,7 @@ package baraholkateam.rest.service;
 import baraholkateam.rest.model.CurrentAdvertisement;
 import baraholkateam.rest.repository.CurrentAdvertisementRepository;
 import baraholkateam.util.TagType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,10 +13,9 @@ import java.util.Optional;
 /**
  * Сервис взаимодействия с сущностью "CurrentAdvertisement".
  */
+@Slf4j
 @Service
 public class CurrentAdvertisementService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(CurrentAdvertisementService.class);
 
     @Autowired
     private CurrentAdvertisementRepository currentAdvertisementRepository;
@@ -27,7 +25,7 @@ public class CurrentAdvertisementService {
         if (currentAdvertisementOptional.isPresent()) {
             return currentAdvertisementOptional.get();
         } else {
-            LOGGER.error(String.format("Current advertisement for chat %d not found!", chatId));
+            log.error("Current advertisement for chat {} not found!", chatId);
             return null;
         }
     }
@@ -41,7 +39,7 @@ public class CurrentAdvertisementService {
         if (currentAdvertisementOptional.isPresent()) {
             return currentAdvertisementOptional.get().getMessageId();
         } else {
-            LOGGER.error(String.format("Current advertisement's message id for chat %d not found!", chatId));
+            log.error("Current advertisement's message id for chat {} not found!", chatId);
             return null;
         }
     }
@@ -51,7 +49,7 @@ public class CurrentAdvertisementService {
         if (currentAdvertisementOptional.isPresent()) {
             return currentAdvertisementOptional.get().getPhotos();
         } else {
-            LOGGER.error(String.format("Current advertisement's photo ids for chat %d not found!", chatId));
+            log.error("Current advertisement's photo ids for chat {} not found!", chatId);
             return null;
         }
     }
@@ -61,7 +59,7 @@ public class CurrentAdvertisementService {
         if (currentAdvertisementOptional.isPresent()) {
             return currentAdvertisementOptional.get().getDescription();
         } else {
-            LOGGER.error(String.format("Current advertisement's description for chat %d not found!", chatId));
+            log.error("Current advertisement's description for chat {} not found!", chatId);
             return null;
         }
     }
@@ -71,7 +69,7 @@ public class CurrentAdvertisementService {
         if (currentAdvertisementOptional.isPresent()) {
             return currentAdvertisementOptional.get().getTags();
         } else {
-            LOGGER.error(String.format("Current advertisement's tags for chat %d not found!", chatId));
+            log.error("Current advertisement's tags for chat {} not found!", chatId);
             return null;
         }
     }
@@ -81,8 +79,7 @@ public class CurrentAdvertisementService {
         if (currentAdvertisementOptional.isPresent()) {
             return currentAdvertisementOptional.get().getTagsOfType(tagType);
         } else {
-            LOGGER.error(String.format("Current advertisement's tags of type %s for chat %d not found!",
-                    tagType.name(), chatId));
+            log.error("Current advertisement's tags of type {} for chat {} not found!", tagType.name(), chatId);
             return null;
         }
     }
@@ -92,7 +89,7 @@ public class CurrentAdvertisementService {
         if (currentAdvertisementOptional.isPresent()) {
             return currentAdvertisementOptional.get().getPrice();
         } else {
-            LOGGER.error(String.format("Current advertisement's price for chat %d not found!", chatId));
+            log.error("Current advertisement's price for chat {} not found!", chatId);
             return null;
         }
     }
@@ -102,7 +99,7 @@ public class CurrentAdvertisementService {
         if (currentAdvertisementOptional.isPresent()) {
             return currentAdvertisementOptional.get().getPhone();
         } else {
-            LOGGER.error(String.format("Current advertisement's phone for chat %d not found!", chatId));
+            log.error("Current advertisement's phone for chat {} not found!", chatId);
             return null;
         }
     }
@@ -112,7 +109,7 @@ public class CurrentAdvertisementService {
         if (currentAdvertisementOptional.isPresent()) {
             return currentAdvertisementOptional.get().getContacts();
         } else {
-            LOGGER.error(String.format("Current advertisement's contacts for chat %d not found!", chatId));
+            log.error("Current advertisement's contacts for chat {} not found!", chatId);
             return null;
         }
     }
@@ -122,7 +119,7 @@ public class CurrentAdvertisementService {
         if (currentAdvertisementOptional.isPresent()) {
             return currentAdvertisementOptional.get().getAdvertisementText();
         } else {
-            LOGGER.error(String.format("Current advertisement's text for chat %d not found!", chatId));
+            log.error("Current advertisement's text for chat {} not found!", chatId);
             return null;
         }
     }
@@ -132,7 +129,7 @@ public class CurrentAdvertisementService {
         if (currentAdvertisementOptional.isPresent()) {
             return currentAdvertisementOptional.get().getCreationTime();
         } else {
-            LOGGER.error(String.format("Current advertisement's creation time for chat %d not found!", chatId));
+            log.error("Current advertisement's creation time for chat {} not found!", chatId);
             return null;
         }
     }
@@ -142,7 +139,7 @@ public class CurrentAdvertisementService {
         if (currentAdvertisementOptional.isPresent()) {
             return currentAdvertisementOptional.get().getNextUpdateTime();
         } else {
-            LOGGER.error(String.format("Current advertisement's next update time for chat %d not found!", chatId));
+            log.error("Current advertisement's next update time for chat {} not found!", chatId);
             return null;
         }
     }
@@ -152,7 +149,7 @@ public class CurrentAdvertisementService {
         if (currentAdvertisementOptional.isPresent()) {
             return currentAdvertisementOptional.get().getUpdateAttempt();
         } else {
-            LOGGER.error(String.format("Current advertisement's update attempt for chat %d not found!", chatId));
+            log.error("Current advertisement's update attempt for chat {} not found!", chatId);
             return null;
         }
     }
@@ -164,7 +161,7 @@ public class CurrentAdvertisementService {
             advertisement.setMessageId(messageId);
             return currentAdvertisementRepository.save(advertisement);
         } else {
-            LOGGER.error(String.format("Cannot set message id for chat %d!", chatId));
+            log.error("Cannot set message id for chat {}!", chatId);
             return null;
         }
     }
@@ -176,7 +173,7 @@ public class CurrentAdvertisementService {
             advertisement.setDescription(description);
             return currentAdvertisementRepository.save(advertisement);
         } else {
-            LOGGER.error(String.format("Cannot set description for chat %d!", chatId));
+            log.error("Cannot set description for chat {}!", chatId);
             return null;
         }
     }
@@ -188,7 +185,7 @@ public class CurrentAdvertisementService {
             advertisement.setPrice(price);
             return currentAdvertisementRepository.save(advertisement);
         } else {
-            LOGGER.error(String.format("Cannot set price for chat %d!", chatId));
+            log.error("Cannot set price for chat {}!", chatId);
             return null;
         }
     }
@@ -200,7 +197,7 @@ public class CurrentAdvertisementService {
             advertisement.setTags(tags);
             return currentAdvertisementRepository.save(advertisement);
         } else {
-            LOGGER.error(String.format("Cannot set price for chat %d!", chatId));
+            log.error("Cannot set tags for chat {}!", chatId);
             return null;
         }
     }
@@ -212,7 +209,7 @@ public class CurrentAdvertisementService {
             advertisement.setPhone(phone);
             return currentAdvertisementRepository.save(advertisement);
         } else {
-            LOGGER.error(String.format("Cannot set phone for chat %d!", chatId));
+            log.error("Cannot set phone for chat {}!", chatId);
             return null;
         }
     }
@@ -224,7 +221,7 @@ public class CurrentAdvertisementService {
             advertisement.addSocial(social);
             return currentAdvertisementRepository.save(advertisement);
         } else {
-            LOGGER.error(String.format("Cannot add social for chat %d!", chatId));
+            log.error("Cannot add social for chat {}!", chatId);
             return null;
         }
     }
@@ -236,7 +233,7 @@ public class CurrentAdvertisementService {
             advertisement.setSocials(socials);
             return currentAdvertisementRepository.save(advertisement);
         } else {
-            LOGGER.error(String.format("Cannot add social for chat %d!", chatId));
+            log.error("Cannot set socials for chat {}!", chatId);
             return null;
         }
     }
@@ -248,7 +245,7 @@ public class CurrentAdvertisementService {
             advertisement.addPhoto(photo);
             return currentAdvertisementRepository.save(advertisement);
         } else {
-            LOGGER.error(String.format("Cannot add photo for chat %d!", chatId));
+            log.error("Cannot add photo for chat {}!", chatId);
             return null;
         }
     }
@@ -260,7 +257,7 @@ public class CurrentAdvertisementService {
             advertisement.setPhotos(photos);
             return currentAdvertisementRepository.save(advertisement);
         } else {
-            LOGGER.error(String.format("Cannot add photo for chat %d!", chatId));
+            log.error("Cannot add photos for chat {}!", chatId);
             return null;
         }
     }
@@ -272,7 +269,7 @@ public class CurrentAdvertisementService {
             advertisement.addTags(tags);
             return currentAdvertisementRepository.save(advertisement);
         } else {
-            LOGGER.error(String.format("Cannot add tags for chat %d!", chatId));
+            log.error("Cannot add tags for chat {}!", chatId);
             return null;
         }
     }
@@ -284,7 +281,7 @@ public class CurrentAdvertisementService {
             advertisement.addTag(tag);
             return currentAdvertisementRepository.save(advertisement);
         } else {
-            LOGGER.error(String.format("Cannot add tag for chat %d!", chatId));
+            log.error("Cannot add tag for chat {}!", chatId);
             return null;
         }
     }
@@ -296,7 +293,7 @@ public class CurrentAdvertisementService {
             advertisement.setCreationTime(creationTime);
             return currentAdvertisementRepository.save(advertisement);
         } else {
-            LOGGER.error(String.format("Cannot add creation time for chat %d!", chatId));
+            log.error("Cannot add creation time for chat {}!", chatId);
             return null;
         }
     }
@@ -308,7 +305,7 @@ public class CurrentAdvertisementService {
             advertisement.setNextUpdateTime(nextUpdateTime);
             return currentAdvertisementRepository.save(advertisement);
         } else {
-            LOGGER.error(String.format("Cannot add next update time for chat %d!", chatId));
+            log.error("Cannot add next update time for chat {}!", chatId);
             return null;
         }
     }
@@ -320,7 +317,7 @@ public class CurrentAdvertisementService {
             advertisement.setUpdateAttempt(updateAttempt);
             return currentAdvertisementRepository.save(advertisement);
         } else {
-            LOGGER.error(String.format("Cannot add tag for chat %d!", chatId));
+            log.error("Cannot set update attempt for chat {}!", chatId);
             return null;
         }
     }
@@ -328,4 +325,5 @@ public class CurrentAdvertisementService {
     public void remove(Long chatId) {
         currentAdvertisementRepository.deleteById(chatId);
     }
+
 }

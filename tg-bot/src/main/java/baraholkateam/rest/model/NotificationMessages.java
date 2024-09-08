@@ -5,15 +5,24 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 /**
  * Сообщения, отправляемые пользователю во время уточнения актуальности уведомлений.
  */
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @IdClass(NotificationMessagesId.class)
 @Table(name = "notification_messages")
 public class NotificationMessages {
+
     @Id
     @Column(name = "chat_id")
     private Long chatId;
@@ -26,37 +35,4 @@ public class NotificationMessages {
     @Column(name = "notification_message")
     private Message notificationMessage;
 
-    public NotificationMessages() {
-
-    }
-
-    public NotificationMessages(Long chatId, Long messageId, Message message) {
-        this.chatId = chatId;
-        this.messageId = messageId;
-        this.notificationMessage = message;
-    }
-
-    public Long getChatId() {
-        return chatId;
-    }
-
-    public Long getMessageId() {
-        return messageId;
-    }
-
-    public Message getNotificationMessage() {
-        return notificationMessage;
-    }
-
-    public void setChatId(Long chatId) {
-        this.chatId = chatId;
-    }
-
-    public void setMessageId(Long messageId) {
-        this.messageId = messageId;
-    }
-
-    public void setNotificationMessages(Message notificationMessage) {
-        this.notificationMessage = notificationMessage;
-    }
 }

@@ -35,7 +35,7 @@ public class BaraholkaBotRestController {
     @RequestMapping(method = RequestMethod.POST, value = "/my_advertisements",
             headers = {"content-type=application/json"})
     public ResponseEntity<List<ActualAdvertisement>> getUserAdvertisements(@RequestBody TelegramUserInfo userInfo) {
-        Long userId = userInfo.getId();
+        Long userId = userInfo.id();
 
         if (userId == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -65,7 +65,7 @@ public class BaraholkaBotRestController {
         }
 
         if (!controllerHelper.checkUserRights(userInfo)
-                || !controllerHelper.checkIsUserChannelMember(userInfo.getId())) {
+                || !controllerHelper.checkIsUserChannelMember(userInfo.id())) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
@@ -80,7 +80,7 @@ public class BaraholkaBotRestController {
             headers = {"content-type=application/json"})
     public ResponseEntity<HttpStatus> deleteAdvertisement(@RequestBody TelegramUserInfo userInfo,
                                                           @PathVariable("message_id") Long messageId) {
-        Long userId = userInfo.getId();
+        Long userId = userInfo.id();
 
         if (userId == null || messageId == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -116,7 +116,7 @@ public class BaraholkaBotRestController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        Long userId = userInfo.getId();
+        Long userId = userInfo.id();
 
         if (userId == null || tagsList.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -137,7 +137,7 @@ public class BaraholkaBotRestController {
     @RequestMapping(method = RequestMethod.POST, value = "/all_tags",
             headers = {"content-type=application/json"})
     public ResponseEntity<AllTags> getAllTags(@RequestBody TelegramUserInfo userInfo) {
-        Long userId = userInfo.getId();
+        Long userId = userInfo.id();
 
         if (userId == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

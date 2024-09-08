@@ -15,15 +15,14 @@ import java.util.List;
 
 @Component
 public class NewAdvertisementCommand extends Command {
+
     private static final String NEW_AD = """
             Команда /%s позволяет перейти к процессу создания нового объявления.
             Вам необходимо ответить на вопросы и заполнить макет объявления.
             Чтобы прервать создание, нужно вернуться в главное меню /%s.
             Нажмите на кнопку '%s', чтобы начать создание объявления.""";
-
     @Autowired
     private CurrentAdvertisementService currentAdvertisementService;
-
     @Autowired
     private ChosenTagsService chosenTagsService;
 
@@ -37,11 +36,12 @@ public class NewAdvertisementCommand extends Command {
         chosenTagsService.delete(chat.getId());
 
         sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
-                String.format(NEW_AD, State.NewAdvertisement.getIdentifier(), State.NewAdvertisement.getIdentifier(),
+                String.format(NEW_AD, State.NewAdvertisement.getIdentifier(), State.MainMenu.getIdentifier(),
                         State.NewAdvertisement_AddPhotos.getDescription()), getAddReplyKeyboard());
     }
 
     private ReplyKeyboardMarkup getAddReplyKeyboard() {
         return getReplyKeyboard(List.of(State.NewAdvertisement_AddPhotos.getDescription()), false);
     }
+
 }

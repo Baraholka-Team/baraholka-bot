@@ -19,14 +19,13 @@ import java.util.List;
 
 @Component
 public class NewAdvertisementConfirmPhone extends Command {
+
     private static final String PHONE_TEXT = "Ваш номер телефона: %s";
     private static final String SOCIAL_TEXT = "Добавлена социальная сеть: %s";
     private static final String CONFIRM_PHONE_TEXT = "Желаете добавить ссылку на вашу социальную сеть?";
     public static final String DELETE_ALL_SOCIALS = "Удалить все социальные сети";
-
     @Autowired
     private CurrentAdvertisementService currentAdvertisementService;
-
     @Autowired
     private PreviousStateService previousStateService;
 
@@ -79,4 +78,5 @@ public class NewAdvertisementConfirmPhone extends Command {
     private ReplyKeyboardMarkup getDeleteButton() {
         return getReplyKeyboard(List.of(DELETE_ALL_SOCIALS), true);
     }
+
 }

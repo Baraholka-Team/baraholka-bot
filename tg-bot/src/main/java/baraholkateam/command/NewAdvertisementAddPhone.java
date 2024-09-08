@@ -10,6 +10,7 @@ import java.util.Collections;
 
 @Component
 public class NewAdvertisementAddPhone extends Command {
+
     private static final String ADD_PHONE_TEXT = """
             Введите ваш номер в формате
             +7-xxx-xxx-xx-xx""";
@@ -23,4 +24,5 @@ public class NewAdvertisementAddPhone extends Command {
         sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
                 ADD_PHONE_TEXT, getReplyKeyboard(Collections.emptyList(), true));
     }
+
 }

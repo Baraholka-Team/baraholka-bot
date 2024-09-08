@@ -1,9 +1,9 @@
 package baraholkateam.telegram_api_requests;
 
+import baraholkateam.util.TelegramUser;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +14,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+@Slf4j
 @Component
 public class TelegramAPIRequests {
     private static final String FORWARD_MESSAGE = "https://api.telegram.org/bot%s/forwardMessage";
@@ -43,7 +44,6 @@ public class TelegramAPIRequests {
     private static final String FIRST_NAME_FIELD = "first_name";
     private static final String LAST_NAME_FIELD = "last_name";
     private static final String USERNAME_FIELD = "username";
-    private static final Logger LOGGER = LoggerFactory.getLogger(TelegramAPIRequests.class);
     private final HttpClient client = HttpClient.newHttpClient();
 
     @Value("${bot.token}")
@@ -89,7 +89,7 @@ public class TelegramAPIRequests {
 
             return result.getLong(MESSAGE_ID_FIELD);
         } catch (URISyntaxException | IOException | InterruptedException e) {
-            LOGGER.error(String.format("Cannot create request: %s", e.getMessage()));
+            log.error("Cannot forward message: {}", e.getMessage());
             return null;
         }
     }
@@ -124,7 +124,7 @@ public class TelegramAPIRequests {
 
             return result.getString(FILE_PATH_FIELD);
         } catch (URISyntaxException | IOException | InterruptedException e) {
-            LOGGER.error(String.format("Cannot create request: %s", e.getMessage()));
+            log.error("Cannot get file path: {}", e.getMessage());
             return null;
         }
     }
@@ -166,7 +166,7 @@ public class TelegramAPIRequests {
 
             return result.getString(STATUS_FIELD);
         } catch (URISyntaxException | IOException | InterruptedException e) {
-            LOGGER.error(String.format("Cannot create request: %s", e.getMessage()));
+            log.error("Cannot get user role: {}", e.getMessage());
             return null;
         }
     }
@@ -237,27 +237,17 @@ public class TelegramAPIRequests {
 
             return new TelegramUser(uid, firstName, lastName, username);
         } catch (URISyntaxException | IOException | InterruptedException e) {
-            LOGGER.error(String.format("Cannot create request: %s", e.getMessage()));
+            log.error("Cannot get user: {}", e.getMessage());
             return null;
         }
     }
 
     private void logErrorNotSuccessCode(HttpRequest request, HttpResponse<String> response) {
-        LOGGER.error(String.format(NOT_SUCCESS_TEXT, request.uri(), request.headers().toString(), response.body()));
+        log.error(String.format(NOT_SUCCESS_TEXT, request.uri(), request.headers().toString(), response.body()));
     }
 
     private void logErrorNoField(HttpRequest request, HttpResponse<String> response, String field) {
-        LOGGER.error(String.format(NO_FIELD_TEXT, field, request.uri(), request.headers().toString(), response.body()));
+        log.error(String.format(NO_FIELD_TEXT, field, request.uri(), request.headers().toString(), response.body()));
     }
 
-    /**
-     * Данные пользователя Телеграмма.
-     * @param userId id пользователя
-     * @param firstName имя
-     * @param lastName фамилия
-     * @param username  никнейм
-     */
-    public record TelegramUser(Integer userId, String firstName, String lastName, String username) {
-
-    }
 }

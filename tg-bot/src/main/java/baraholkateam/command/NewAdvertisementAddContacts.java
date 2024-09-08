@@ -14,6 +14,7 @@ import java.util.List;
 
 @Component
 public class NewAdvertisementAddContacts extends Command {
+
     private static final String ADD_CONTACTS_TEXT = """
             Вы можете указать свои контактные данные.""";
     private static final String ADD_CONTACTS_QUESTION = """
@@ -54,4 +55,5 @@ public class NewAdvertisementAddContacts extends Command {
 
         return inlineKeyboardMarkup;
     }
+
 }

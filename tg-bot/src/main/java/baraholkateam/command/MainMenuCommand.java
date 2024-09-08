@@ -11,6 +11,7 @@ import java.util.List;
 
 @Component
 public class MainMenuCommand extends Command {
+
     private static final String MAIN_MENU = """
             Добро пожаловать в главное меню. Здесь Вы можете:
             1. Создать новое объявление: /%s;
@@ -44,4 +45,5 @@ public class MainMenuCommand extends Command {
                 State.Help.getDescription()
         ), false);
     }
+
 }

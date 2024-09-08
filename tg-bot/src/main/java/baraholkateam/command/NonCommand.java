@@ -9,6 +9,7 @@ import java.util.List;
 
 @Component
 public class NonCommand {
+
     private static final String NO_CURRENT_STATE = """
             Ошибка в текущем состоянии бота.
             Пожалуйста, вернитесь в /%s и следуйте инструкциям.""";
@@ -89,4 +90,5 @@ public class NonCommand {
             return inlineKeyboardMarkup;
         }
     }
+
 }

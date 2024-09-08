@@ -22,21 +22,17 @@ public class AllTags implements Serializable {
     private final List<String> productCategories;
 
     public AllTags() {
-        city = new ArrayList<>(Arrays.stream(Tag.values())
-                .filter(tag -> tag.getTagType() == TagType.City)
-                .map(Tag::getName)
-                .toList());
-        actuality = new ArrayList<>(Arrays.stream(Tag.values())
-                .filter(tag -> tag.getTagType() == TagType.Actuality)
-                .map(Tag::getName)
-                .toList());
-        advertisementType = new ArrayList<>(Arrays.stream(Tag.values())
-                .filter(tag -> tag.getTagType() == TagType.AdvertisementType)
-                .map(Tag::getName)
-                .toList());
-        productCategories = new ArrayList<>(Arrays.stream(Tag.values())
-                .filter(tag -> tag.getTagType() == TagType.ProductCategories)
+        city = getTagsList(TagType.City);
+        actuality = getTagsList(TagType.Actuality);
+        advertisementType = getTagsList(TagType.AdvertisementType);
+        productCategories = getTagsList(TagType.ProductCategories);
+    }
+
+    private List<String> getTagsList(TagType tagType) {
+        return new ArrayList<>(Arrays.stream(Tag.values())
+                .filter(tag -> tag.getTagType() == tagType)
                 .map(Tag::getName)
                 .toList());
     }
+
 }

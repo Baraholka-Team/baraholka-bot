@@ -4,18 +4,18 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 /**
  * Последнее сообщение, отправленное ботом пользователю.
  */
+@Slf4j
+@NoArgsConstructor
 @Entity
 @Table(name = "last_sent_message")
 public class LastSentMessage {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(LastSentMessage.class);
 
     @Id
     @Column(name = "chat_id")
@@ -24,10 +24,6 @@ public class LastSentMessage {
     @Column(name = "message")
     private Message message;
 
-    public LastSentMessage() {
-
-    }
-
     public LastSentMessage(Long chatId, Message message) {
         this.chatId = chatId;
         this.message = message;
@@ -35,8 +31,9 @@ public class LastSentMessage {
 
     public Message getMessage() {
         if (message == null) {
-            LOGGER.warn("Last message is null!");
+            log.warn("Last message is null!");
         }
         return message;
     }
+
 }

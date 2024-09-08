@@ -1,8 +1,6 @@
 package baraholkateam;
 
 import baraholkateam.bot.BaraholkaBot;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -21,7 +19,6 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 @EnableScheduling
 @SpringBootApplication
 public class BaraholkaBotMain {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BaraholkaBotMain.class);
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(BaraholkaBotMain.class, args);
@@ -30,8 +27,8 @@ public class BaraholkaBotMain {
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
             botsApi.registerBot(bot);
         } catch (TelegramApiException e) {
-            LOGGER.error(String.format("Cannot register new bot: %s", e.getMessage()));
             throw new RuntimeException("Failed to start application.", e);
         }
     }
+
 }

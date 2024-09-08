@@ -10,6 +10,7 @@ import java.util.Collections;
 
 @Component
 public class NewAdvertisementAddSocial extends Command {
+
     private static final String ADD_SOCIAL_TEXT = """
             Добавьте ссылку на вашу социальную сеть.
             Примеры таких ссылок:
@@ -27,4 +28,5 @@ public class NewAdvertisementAddSocial extends Command {
         sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(), ADD_SOCIAL_TEXT,
                 getReplyKeyboard(Collections.emptyList(), true));
     }
+
 }

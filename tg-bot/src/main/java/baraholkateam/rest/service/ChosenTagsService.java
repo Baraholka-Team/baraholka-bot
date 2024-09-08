@@ -30,4 +30,5 @@ public class ChosenTagsService {
     public void delete(Long chatId) {
         chosenTagsRepository.deleteById(chatId);
     }
+
 }

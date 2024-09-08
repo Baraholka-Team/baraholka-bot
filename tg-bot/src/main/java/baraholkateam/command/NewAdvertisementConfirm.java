@@ -5,8 +5,7 @@ import baraholkateam.rest.service.CurrentAdvertisementService;
 import baraholkateam.telegram_api_requests.TelegramAPIRequests;
 import baraholkateam.util.Converter;
 import baraholkateam.util.State;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
@@ -28,8 +27,10 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class NewAdvertisementConfirm extends Command {
+
     private static final String CONTACTS_LIST_TEXT = """
             Добавлены ссылки на следующие социальные сети:
             %s""";
@@ -37,15 +38,11 @@ public class NewAdvertisementConfirm extends Command {
             Сформировано следующее объявление:""";
     private static final String CONFIRM_AD_TEXT = """
             Желаете опубликовать ваше объявление в канале?""";
-    private static final Logger LOGGER = LoggerFactory.getLogger(NewAdvertisementConfirm.class);
-
     @Autowired
     private CurrentAdvertisementService currentAdvertisementService;
-
     @Autowired
     private TelegramAPIRequests telegramAPIRequests;
 
-    @Autowired
     public NewAdvertisementConfirm() {
         super(State.NewAdvertisement_Confirm.getIdentifier(), State.NewAdvertisement_Confirm.getDescription());
     }
@@ -91,7 +88,7 @@ public class NewAdvertisementConfirm extends Command {
         try {
             return absSender.execute(sendPhoto);
         } catch (TelegramApiException e) {
-            LOGGER.error("Can't send photo message", e);
+            log.error("Can't send photo message", e);
             return null;
         }
     }
@@ -124,7 +121,7 @@ public class NewAdvertisementConfirm extends Command {
         try {
             return absSender.execute(sendMediaGroup);
         } catch (TelegramApiException e) {
-            LOGGER.error("Can't send photos with media group", e);
+            log.error("Can't send photos with media group", e);
             return null;
         }
     }
@@ -153,4 +150,5 @@ public class NewAdvertisementConfirm extends Command {
 
         return inlineKeyboardMarkup;
     }
+
 }

@@ -3,8 +3,7 @@ package baraholkateam.rest.service;
 import baraholkateam.rest.model.PreviousState;
 import baraholkateam.rest.repository.PreviousStateRepository;
 import baraholkateam.util.State;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,9 +12,9 @@ import java.util.Optional;
 /**
  * Сервис взаимодействия с сущностью "PreviousState".
  */
+@Slf4j
 @Service
 public class PreviousStateService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PreviousStateService.class);
 
     @Autowired
     private PreviousStateRepository previousStateRepository;
@@ -25,7 +24,7 @@ public class PreviousStateService {
         if (previousStateRepositoryOptional.isPresent()) {
             return previousStateRepositoryOptional.get().getState();
         } else {
-            LOGGER.error(String.format("Previous state for chat %d not found!", chatId));
+            log.error("Previous state for chat {} not found!", chatId);
             return null;
         }
     }
@@ -33,4 +32,5 @@ public class PreviousStateService {
     public void put(Long chatId, State state) {
         previousStateRepository.save(new PreviousState(chatId, state));
     }
+
 }

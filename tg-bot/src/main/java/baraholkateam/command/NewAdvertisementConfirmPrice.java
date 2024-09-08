@@ -13,10 +13,10 @@ import java.util.List;
 
 @Component
 public class NewAdvertisementConfirmPrice extends Command {
+
     private static final String CONFIRM_PRICE_TEXT = """
             Цена вашего товара: %s руб.
             Теперь необходимо добавить контакты для связи с Вами.""";
-
     @Autowired
     private CurrentAdvertisementService currentAdvertisementService;
 
@@ -35,4 +35,5 @@ public class NewAdvertisementConfirmPrice extends Command {
     private ReplyKeyboardMarkup getAddReplyKeyboard() {
         return getReplyKeyboard(List.of(State.NewAdvertisement_AddContacts.getDescription()), true);
     }
+
 }

@@ -9,8 +9,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -20,6 +20,7 @@ import java.util.Objects;
 /**
  * Опубликованное актуальное объявление.
  */
+@Slf4j
 @Entity
 @Table(name = "actual_advertisement")
 public class ActualAdvertisement implements Serializable {
@@ -29,7 +30,6 @@ public class ActualAdvertisement implements Serializable {
     private static final String PHONE_NUMBER = "Номер телефона: <span class=\"tg-spoiler\">%s</span>";
     private static final String CONTACTS = "Контакты: ";
     private static final String CONTACT = "<span class=\"tg-spoiler\">%s</span>";
-    private static final Logger LOGGER = LoggerFactory.getLogger(ActualAdvertisement.class);
 
     @Id
     @Column(name = "message_id")
@@ -56,14 +56,17 @@ public class ActualAdvertisement implements Serializable {
     @JsonProperty("tags")
     private final List<String> tags = new ArrayList<>();
 
+    @Getter
     @Column(name = "price")
     @JsonProperty("price")
     private Long price;
 
+    @Getter
     @Column(name = "phone", length = 16)
     @JsonProperty("phone")
     private String phone;
 
+    @Getter
     @Column(name = "contacts", length = 256)
     @JsonProperty("contacts")
     private List<String> contacts = new ArrayList<>();
@@ -80,56 +83,41 @@ public class ActualAdvertisement implements Serializable {
     @JsonIgnore
     private Integer updateAttempt;
 
-    public ActualAdvertisement() {
-
-    }
-
     public ActualAdvertisement(Long ownerChatId) {
         this.ownerChatId = ownerChatId;
     }
 
-    public ActualAdvertisement(List<String> photos, String description, List<Tag> tags, Long price, String phone,
-                               List<String> contacts) {
-        this.tags.add(Tag.Actual.getName());
-        this.photos = photos;
-        this.description = description;
-        this.tags.addAll(tags.stream().map(Tag::getName).toList());
-        this.price = price;
-        this.phone = phone;
-        this.contacts = contacts;
-    }
-
     public Long getOwnerChatId() {
         if (ownerChatId == null) {
-            LOGGER.warn("Field 'chatId' of the actual advertisement is null!");
+            log.warn("Field 'chatId' of the actual advertisement is null!");
         }
         return ownerChatId;
     }
 
     public Long getMessageId() {
         if (messageId == null) {
-            LOGGER.warn("Field 'messageId' of the actual advertisement is null!");
+            log.warn("Field 'messageId' of the actual advertisement is null!");
         }
         return messageId;
     }
 
     public List<String> getPhotos() {
         if (photos == null || photos.isEmpty()) {
-            LOGGER.warn("Field 'photos' of the actual advertisement is null!");
+            log.warn("Field 'photos' of the actual advertisement is null!");
         }
         return photos;
     }
 
     public String getDescription() {
         if (description == null) {
-            LOGGER.warn("Field 'description' of the actual advertisement is null!");
+            log.warn("Field 'description' of the actual advertisement is null!");
         }
         return description;
     }
 
     public List<String> getTags() {
         if (tags.isEmpty()) {
-            LOGGER.warn("Field 'tags' of the actual advertisement is null!");
+            log.warn("Field 'tags' of the actual advertisement is null!");
         }
         return tags;
     }
@@ -149,35 +137,23 @@ public class ActualAdvertisement implements Serializable {
         return sb.toString();
     }
 
-    public Long getPrice() {
-        return price;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public List<String> getContacts() {
-        return contacts;
-    }
-
     public Long getCreationTime() {
         if (creationTime == null) {
-            LOGGER.warn("Field 'creationTime' of the actual advertisement is null!");
+            log.warn("Field 'creationTime' of the actual advertisement is null!");
         }
         return creationTime;
     }
 
     public Long getNextUpdateTime() {
         if (nextUpdateTime == null) {
-            LOGGER.warn("Field 'nextUpdateTime' of the actual advertisement is null!");
+            log.warn("Field 'nextUpdateTime' of the actual advertisement is null!");
         }
         return nextUpdateTime;
     }
 
     public Integer getUpdateAttempt() {
         if (updateAttempt == null) {
-            LOGGER.warn("Field 'updateAttempt' of the actual advertisement is null!");
+            log.warn("Field 'updateAttempt' of the actual advertisement is null!");
         }
         return updateAttempt;
     }
@@ -283,7 +259,7 @@ public class ActualAdvertisement implements Serializable {
         }
 
         List<String> contacts = this.getContacts();
-        if (contacts.size() > 0) {
+        if (!contacts.isEmpty()) {
             if (phone == null) {
                 sb.append("-".repeat(50));
             }
@@ -293,11 +269,12 @@ public class ActualAdvertisement implements Serializable {
             for (String contact : contacts) {
                 contactsString.append(String.format(CONTACT, contact)).append(",\n");
             }
-            if (contactsString.length() > 0) {
+            if (!contactsString.isEmpty()) {
                 contactsString.setLength(contactsString.length() - 2);
             }
             sb.append(contactsString);
         }
         return sb.toString();
     }
+
 }

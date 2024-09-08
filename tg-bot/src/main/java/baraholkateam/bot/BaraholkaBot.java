@@ -36,8 +36,7 @@ import baraholkateam.telegram_api_requests.TelegramAPIRequests;
 import baraholkateam.util.Converter;
 import baraholkateam.util.State;
 import baraholkateam.util.Tag;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -102,115 +101,82 @@ import static baraholkateam.command.NewAdvertisementConfirmPhoto.DELETE_ALL_PHOT
 import static baraholkateam.notification.NotificationExecutor.FIRST_REPEAT_NOTIFICATION_PERIOD;
 import static baraholkateam.notification.NotificationExecutor.FIRST_REPEAT_NOTIFICATION_TIME_UNIT;
 
+@Slf4j
 @Component("BaraholkaBot")
 public class BaraholkaBot extends TelegramLongPollingCommandBot implements TgFileLoader {
+
     /**
      * Лимит выдачи объявлений в функции поиска объявлений по тегам.
      */
     public static final Integer SEARCH_ADVERTISEMENTS_LIMIT = 10;
     private final String botName;
     private final String botToken;
-    private static final Logger LOGGER = LoggerFactory.getLogger(BaraholkaBot.class);
-
     @Autowired
     private ActualAdvertisementService actualAdvertisementService;
-
     @Autowired
     private CurrentAdvertisementService currentAdvertisementService;
-
     @Autowired
     private CurrentStateService currentStateService;
-
     @Autowired
     private LastSentMessageService lastSentMessageService;
-
     @Autowired
     private ChosenTagsService chosenTagsService;
-
     @Autowired
     private PreviousStateService previousStateService;
-
     @Autowired
     private NonCommand nonCommand;
-
     @Autowired
     private NotificationExecutor notificationExecutor;
-
     @Autowired
     private TelegramAPIRequests telegramAPIRequests;
-
     @Autowired
     private StartCommand startCommand;
-
     @Autowired
     private HelpCommand helpCommand;
-
     @Autowired
     private MainMenuCommand mainMenuCommand;
-
     @Autowired
     private UserAdvertisements userAdvertisements;
-
     @Autowired
     private DeleteAdvertisement deleteAdvertisement;
-
     @Autowired
     private NewAdvertisementAddPhotos newAdvertisementAddPhotos;
-
     @Autowired
     private NewAdvertisementConfirmPhoto newAdvertisementConfirmPhoto;
-
     @Autowired
     private NewAdvertisementAddDescription newAdvertisementAddDescription;
-
     @Autowired
     private NewAdvertisementAddCity newAdvertisementAddCity;
-
     @Autowired
     private NewAdvertisementAddAdvertisementTypes newAdvertisementAddAdvertisementTypes;
-
     @Autowired
     private NewAdvertisementAddCategories newAdvertisementAddCategories;
-
     @Autowired
     private NewAdvertisementAddPrice newAdvertisementAddPrice;
-
     @Autowired
     private NewAdvertisementConfirmPrice newAdvertisementConfirmPrice;
-
     @Autowired
     private NewAdvertisementCommand newAdvertisementCommand;
-
     @Autowired
     private NewAdvertisementAddContacts newAdvertisementAddContacts;
-
     @Autowired
     private NewAdvertisementAddPhone newAdvertisementAddPhone;
-
     @Autowired
     private NewAdvertisementConfirmPhone newAdvertisementConfirmPhone;
-
     @Autowired
     private NewAdvertisementAddSocial newAdvertisementAddSocial;
-
     @Autowired
     private NewAdvertisementConfirm newAdvertisementConfirm;
-
     @Autowired
     private SearchAdvertisements searchAdvertisements;
-
     @Autowired
     private SearchAdvertisementsAddAdvertisementTypes searchAdvertisementsAddAdvertisementTypes;
-
     @Autowired
     private SearchAdvertisementsAddProductCategories searchAdvertisementsAddProductCategories;
-
     @Autowired
     private SearchAdvertisementsShowFoundAdvertisements searchAdvertisementsShowFoundAdvertisements;
-
     @Value("${channel.chat_id}")
     private String channelChatId;
-
     @Value("${channel.username}")
     private String channelUsername;
 
@@ -218,7 +184,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements TgFil
             @Value("${bot.name}") String botName,
             @Value("${bot.token}") String botToken
     ) {
-        super();
+        super(botToken);
         this.botName = botName;
         this.botToken = botToken;
     }
@@ -451,7 +417,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements TgFil
             try {
                 currentAdvertisementService.setPrice(msg.getChatId(), Long.parseLong(text));
             } catch (Exception e) {
-                LOGGER.error("Invalid input from user");
+                log.error("Invalid input from user");
             }
             updateStateOnTextData(msg);
             return true;
@@ -548,7 +514,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements TgFil
                 try {
                     execute(sendMessage);
                 } catch (TelegramApiException e) {
-                    LOGGER.error(String.format("Cannot send message: %s", e.getMessage()));
+                    log.error("Cannot send message: {}", e.getMessage());
                 }
             }
             // ошибка в обработке сообщения пользователя, необходимо повторить данный шаг
@@ -584,7 +550,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements TgFil
             Message sentMessage = execute(answer);
             lastSentMessageService.put(chatId, sentMessage);
         } catch (TelegramApiException e) {
-            LOGGER.error(String.format("Cannot execute command: %s", e.getMessage()));
+            log.error("Cannot execute command: {}", e.getMessage());
         }
     }
 
@@ -699,7 +665,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements TgFil
             case CONFIRM_AD_CALLBACK_DATA -> {
                 deleteLastMessage(msg.getChatId());
                 if (Objects.equals(dataParts[1], "yes")) {
-                    if (currentAdvertisementService.getContacts(msg.getChatId()).size() == 0
+                    if (currentAdvertisementService.getContacts(msg.getChatId()).isEmpty()
                             && currentAdvertisementService.getPhone(msg.getChatId()) == null) {
                         currentAdvertisementService.setSocials(msg.getChatId(),
                                 List.of("@" + telegramAPIRequests.getUser(msg.getChatId()).username()));
@@ -741,7 +707,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements TgFil
                         sendAnswer(msg.getChatId(), SUCCESS_TEXT, null);
                     } else {
                         sendAnswer(msg.getChatId(), UNSUCCESS_TEXT, null);
-                        LOGGER.error("Error while sending advertisement to channel.");
+                        log.error("Error while sending advertisement to channel.");
                     }
                 } else if (Objects.equals(dataParts[1], "no")) {
                     sendAnswer(msg.getChatId(), ADVERTISEMENT_CANCELLED_TEXT, null);
@@ -786,7 +752,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements TgFil
                             .processMessage(this, msg, null);
                 }
             }
-            default -> LOGGER.error(String.format("Unknown command in callback data: %s", callbackQuery));
+            default -> log.error("Unknown command in callback data: {}", callbackQuery);
         }
     }
 
@@ -803,7 +769,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements TgFil
         try {
             execute(editMessage);
         } catch (TelegramApiException e) {
-            LOGGER.error(String.format("Cannot edit deleted message: %s", e.getMessage()));
+            log.error("Cannot edit deleted message: {}", e.getMessage());
         }
     }
 
@@ -814,7 +780,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements TgFil
         try {
             execute(deleteLastMessage);
         } catch (TelegramApiException e) {
-            LOGGER.error(String.format("Cannot delete last message due to: %s", e.getMessage()));
+            log.error("Cannot delete last message due to: {}", e.getMessage());
         }
     }
 
@@ -828,7 +794,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements TgFil
         try {
             execute(editMessageReplyMarkup);
         } catch (TelegramApiException e) {
-            LOGGER.error(String.format("Cannot edit message reply markup due to: %s", e.getMessage()));
+            log.error("Cannot edit message reply markup due to: {}", e.getMessage());
         }
     }
 
@@ -859,8 +825,9 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements TgFil
         try {
             return downloadFile(filePath);
         } catch (TelegramApiException e) {
-            LOGGER.error(String.format("Cannot download file %s", filePath), e);
+            log.error(String.format("Cannot download file %s", filePath), e);
             return null;
         }
     }
+
 }
