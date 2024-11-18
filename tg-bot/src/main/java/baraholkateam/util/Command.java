@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Objects;
 
 public enum Command {
-    UnknownCommand("unknown", "Неизвестная команда"),
     Start("start", "Старт"),
     Help("help", "Справочная информация по боту"),
     MainMenu("menu", "Главное меню"),
