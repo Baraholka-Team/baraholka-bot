@@ -16,11 +16,11 @@ import org.telegram.telegrambots.meta.api.objects.Message;
  */
 @Setter
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
 @IdClass(NotificationMessagesId.class)
 @Table(name = "notification_messages")
+@AllArgsConstructor
+@NoArgsConstructor
 public class NotificationMessages {
 
     @Id

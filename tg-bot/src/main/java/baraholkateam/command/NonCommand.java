@@ -1,6 +1,6 @@
 package baraholkateam.command;
 
-import baraholkateam.util.State;
+import baraholkateam.util.Command;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
@@ -35,30 +35,30 @@ public class NonCommand {
             Цена должна состоять только из цифр и ее длина не должна превышать 18 символов.
             Пожалуйста, введите цену еще раз.""";
 
-    public List<AnswerPair> nonCommandExecute(Message msg, State currentState) {
-        if (currentState == null) {
-            return List.of(new AnswerPair(String.format(NO_CURRENT_STATE, State.MainMenu.getIdentifier()), true, null));
+    public List<AnswerPair> nonCommandExecute(Message msg, Command currentCommand) {
+        if (currentCommand == null) {
+            return List.of(new AnswerPair(String.format(NO_CURRENT_STATE, Command.MainMenu.getIdentifier()), true, null));
         }
 
-        if (currentState.equals(State.Start) || currentState.equals(State.Help) || currentState.equals(State.MainMenu)
-                || currentState.equals(State.NewAdvertisement)) {
-            return List.of(new AnswerPair(String.format(COMMAND_ERROR_MESSAGE, currentState.getIdentifier(),
-                    State.MainMenu.getIdentifier()), true, null));
-        } else if (currentState.equals(State.NewAdvertisement_AddDescription)) {
+        if (currentCommand.equals(Command.Start) || currentCommand.equals(Command.Help) || currentCommand.equals(Command.MainMenu)
+                || currentCommand.equals(Command.NewAdvertisement)) {
+            return List.of(new AnswerPair(String.format(COMMAND_ERROR_MESSAGE, currentCommand.getIdentifier(),
+                    Command.MainMenu.getIdentifier()), true, null));
+        } else if (currentCommand.equals(Command.NewAdvertisement_AddDescription)) {
             return List.of(new AnswerPair(EMPTY_DESCRIPTION, true, null));
-        } else if (currentState.equals(State.NewAdvertisement_AddPhone)) {
+        } else if (currentCommand.equals(Command.NewAdvertisement_AddPhone)) {
            return List.of(new AnswerPair(INVALID_PHONE_NUMBER, true, null));
-        } else if (currentState.equals(State.NewAdvertisement_AddSocial)) {
+        } else if (currentCommand.equals(Command.NewAdvertisement_AddSocial)) {
             return List.of(new AnswerPair(INVALID_SOCIAL, true, null));
-        } else if (currentState.equals(State.NewAdvertisement_AddPrice)) {
+        } else if (currentCommand.equals(Command.NewAdvertisement_AddPrice)) {
             return List.of(new AnswerPair(INVALID_PRICE, true, null));
-        } else if (currentState.equals(State.SearchAdvertisements)) {
+        } else if (currentCommand.equals(Command.SearchAdvertisements)) {
             return List.of(new AnswerPair(CHOOSE_CITY, true, null));
-        } else if (currentState.equals(State.SearchAdvertisements_AddAdvertisementTypes)) {
+        } else if (currentCommand.equals(Command.SearchAdvertisements_AddAdvertisementTypes)) {
             return List.of(new AnswerPair(CHOOSE_ADVERTISEMENT_TYPES, true, null));
-        } else if (currentState.equals(State.SearchAdvertisements_AddProductCategories)) {
+        } else if (currentCommand.equals(Command.SearchAdvertisements_AddProductCategories)) {
             return List.of(new AnswerPair(CHOOSE_PRODUCT_CATEGORIES, true, null));
-        } else if (currentState.equals(State.SearchAdvertisements_ShowFoundAdvertisements)) {
+        } else if (currentCommand.equals(Command.SearchAdvertisements_ShowFoundAdvertisements)) {
             return List.of(new AnswerPair(UNKNOWN_COMMAND, true, null));
         }
         return List.of(new AnswerPair(UNKNOWN_COMMAND, true, null));

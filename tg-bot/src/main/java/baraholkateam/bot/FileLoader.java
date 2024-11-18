@@ -2,7 +2,7 @@ package baraholkateam.bot;
 
 import java.io.File;
 
-public interface TgFileLoader {
+public interface FileLoader {
 
     File downloadFileByFilePath(String filePath);
 

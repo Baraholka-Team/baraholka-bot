@@ -2,7 +2,8 @@ package baraholkateam.command;
 
 import baraholkateam.rest.service.ChosenTagsService;
 import baraholkateam.rest.service.PreviousStateService;
-import baraholkateam.util.State;
+import baraholkateam.util.Command;
+import baraholkateam.util.Configuration;
 import baraholkateam.util.Tag;
 import baraholkateam.util.TagType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,42 +16,54 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class SearchAdvertisementsAddAdvertisementTypes extends Command {
+public class SearchAdvertisementsAddAdvertisementTypes extends BaraholkaBotCommand {
 
-    private static final String CHOOSE_ADVERTISEMENT_TYPE = """
-            Выберите тип объявления.
-            Вы можете выбрать несколько хэштегов, нажав на них, либо не выбрать ни один.
-            Для подтверждения выбора, нажмите на кнопку '%s'.""";
     @Autowired
     private ChosenTagsService chosenTagsService;
     @Autowired
     private PreviousStateService previousStateService;
 
     public SearchAdvertisementsAddAdvertisementTypes() {
-        super(State.SearchAdvertisements_AddAdvertisementTypes.getIdentifier(),
-                State.SearchAdvertisements_AddAdvertisementTypes.getDescription());
+        super(Command.SearchAdvertisements_AddAdvertisementTypes.getIdentifier(),
+                Command.SearchAdvertisements_AddAdvertisementTypes.getDescription());
     }
 
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] arguments) {
         List<Tag> tags = chosenTagsService.get(chat.getId());
 
-        if (previousStateService.get(chat.getId()) == State.SearchAdvertisements) {
-            String hashtags = NO_HASHTAGS;
+        if (previousStateService.get(chat.getId()) == Command.SearchAdvertisements) {
+            String hashtags = Configuration.CommandMessage.NO_HASHTAGS;
             if (tags != null && !tags.isEmpty()) {
                 hashtags = tags.stream()
                         .map(Tag::getName)
                         .collect(Collectors.joining(" "));
             }
-            sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
-                    String.format(CHOSEN_HASHTAGS, hashtags),
-                    showNextButton());
-            sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
-                    String.format(CHOOSE_ADVERTISEMENT_TYPE, NEXT_BUTTON_TEXT),
-                    getTags(TagType.AdvertisementType, true));
+
+            prepareNextButton();
+            sendAnswer(
+                    absSender,
+                    user,
+                    chat,
+                    String.format(Configuration.CommandMessage.CHOSEN_HASHTAGS, hashtags),
+                    true
+            );
+
+            prepareTags(TagType.AdvertisementType, true);
+            sendAnswer(
+                    absSender,
+                    user,
+                    chat,
+                    String.format(Configuration.CommandMessage.CHOOSE_ADVERTISEMENT_TYPE, Configuration.CommandMessage.NEXT_BUTTON_TEXT),
+                    true
+            );
         } else {
-            sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
-                    String.format(INCORRECT_PREVIOUS_STATE, State.MainMenu.getIdentifier()), null);
+            sendAnswer(
+                    absSender,
+                    user,
+                    chat,
+                    String.format(Configuration.CommandMessage.INCORRECT_PREVIOUS_STATE, Command.MainMenu.getIdentifier())
+            );
         }
     }
 

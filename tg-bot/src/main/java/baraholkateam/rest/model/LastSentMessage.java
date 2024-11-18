@@ -12,9 +12,9 @@ import org.telegram.telegrambots.meta.api.objects.Message;
  * Последнее сообщение, отправленное ботом пользователю.
  */
 @Slf4j
-@NoArgsConstructor
 @Entity
 @Table(name = "last_sent_message")
+@NoArgsConstructor
 public class LastSentMessage {
 
     @Id

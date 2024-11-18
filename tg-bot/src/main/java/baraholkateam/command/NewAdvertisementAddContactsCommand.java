@@ -1,6 +1,7 @@
 package baraholkateam.command;
 
-import baraholkateam.util.State;
+import baraholkateam.util.Command;
+import baraholkateam.util.Configuration;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -13,34 +14,42 @@ import java.util.Collections;
 import java.util.List;
 
 @Component
-public class NewAdvertisementAddContacts extends Command {
+public class NewAdvertisementAddContactsCommand extends BaraholkaBotCommand {
 
-    private static final String ADD_CONTACTS_TEXT = """
-            Вы можете указать свои контактные данные.""";
-    private static final String ADD_CONTACTS_QUESTION = """
-            Желаете указать ваш номер телефона?""";
-
-    public NewAdvertisementAddContacts() {
-        super(State.NewAdvertisement_AddContacts.getIdentifier(), State.NewAdvertisement_AddContacts.getDescription());
+    public NewAdvertisementAddContactsCommand() {
+        super(Command.NewAdvertisement_AddContacts.getIdentifier(), Command.NewAdvertisement_AddContacts.getDescription());
     }
 
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
-        sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
-                ADD_CONTACTS_TEXT, getReplyKeyboard(Collections.emptyList(), true));
-        sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
-                ADD_CONTACTS_QUESTION, getAddPhone());
+        prepareReplyKeyboard(Collections.emptyList(), true);
+        sendAnswer(
+                absSender,
+                user,
+                chat,
+                Configuration.CommandMessage.ADD_CONTACTS_TEXT,
+                true
+        );
+
+        prepareAddPhoneButtons();
+        sendAnswer(
+                absSender,
+                user,
+                chat,
+                Configuration.CommandMessage.ADD_CONTACTS_QUESTION,
+                true
+        );
     }
 
-    private InlineKeyboardMarkup getAddPhone() {
+    private void prepareAddPhoneButtons() {
         InlineKeyboardButton yesButton = new InlineKeyboardButton();
         yesButton.setText("Да");
-        String yesCallbackData = String.format("%s %s", PHONE_CALLBACK_DATA, "yes");
+        String yesCallbackData = String.format("%s %s", Configuration.CommandMessage.PHONE_CALLBACK_DATA, "yes");
         yesButton.setCallbackData(yesCallbackData);
 
         InlineKeyboardButton noButton = new InlineKeyboardButton();
         noButton.setText("Нет");
-        String noCallbackData = String.format("%s %s", PHONE_CALLBACK_DATA, "no");
+        String noCallbackData = String.format("%s %s", Configuration.CommandMessage.PHONE_CALLBACK_DATA, "no");
         noButton.setCallbackData(noCallbackData);
 
         List<InlineKeyboardButton> keyboardFirstRow = new ArrayList<>();
@@ -53,7 +62,7 @@ public class NewAdvertisementAddContacts extends Command {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         inlineKeyboardMarkup.setKeyboard(keyboardRows);
 
-        return inlineKeyboardMarkup;
+        replyKeyboard = inlineKeyboardMarkup;
     }
 
 }

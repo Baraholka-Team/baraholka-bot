@@ -4,7 +4,8 @@ import baraholkateam.rest.model.ActualAdvertisement;
 import baraholkateam.rest.repository.ActualAdvertisementRepository;
 import baraholkateam.rest.service.LastSentMessageService;
 import baraholkateam.telegram_api_requests.TelegramAPIRequests;
-import baraholkateam.util.State;
+import baraholkateam.util.Command;
+import baraholkateam.util.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -15,10 +16,8 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 import java.util.List;
 
 @Component
-public class UserAdvertisements extends Command {
+public class UserAdvertisementsCommand extends BaraholkaBotCommand {
 
-    private static final String NO_ADVERTISEMENTS = "Пользователь не опубликовал ни одного объявления.";
-    private static final String USER_ADVERTISEMENTS = "Опубликованные актуальные объявления пользователя:";
     @Autowired
     private TelegramAPIRequests telegramAPIRequests;
     @Autowired
@@ -28,8 +27,8 @@ public class UserAdvertisements extends Command {
     @Value("${channel.chat_id}")
     private String channelChatId;
 
-    public UserAdvertisements() {
-        super(State.UserAdvertisements.getIdentifier(), State.UserAdvertisements.getDescription());
+    public UserAdvertisementsCommand() {
+        super(Command.UserAdvertisements.getIdentifier(), Command.UserAdvertisements.getDescription());
     }
 
     @Override
@@ -38,8 +37,13 @@ public class UserAdvertisements extends Command {
                 .findAllByOwnerChatId(chat.getId());
 
         if (actualAdvertisements != null && !actualAdvertisements.isEmpty()) {
-            sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
-                    USER_ADVERTISEMENTS, null);
+            sendAnswer(
+                    absSender,
+                    user,
+                    chat,
+                    Configuration.CommandMessage.USER_ADVERTISEMENTS
+            );
+
             for (ActualAdvertisement actualAdvertisement : actualAdvertisements) {
                 telegramAPIRequests.forwardMessage(
                         channelChatId,
@@ -48,8 +52,12 @@ public class UserAdvertisements extends Command {
                 );
             }
         } else {
-            sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
-                    NO_ADVERTISEMENTS, null);
+            sendAnswer(
+                    absSender,
+                    user,
+                    chat,
+                    Configuration.CommandMessage.NO_ADVERTISEMENTS
+            );
         }
     }
 

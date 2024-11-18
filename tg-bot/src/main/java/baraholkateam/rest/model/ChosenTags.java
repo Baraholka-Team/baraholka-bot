@@ -15,8 +15,8 @@ import java.util.List;
  * Выбранные пользователем теги во время поиска объявлений по тегам.
  */
 @Entity
-@NoArgsConstructor
 @Table(name = "chosen_tags")
+@NoArgsConstructor
 public class ChosenTags {
 
     @Setter

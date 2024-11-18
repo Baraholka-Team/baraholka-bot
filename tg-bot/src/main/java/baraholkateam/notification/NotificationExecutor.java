@@ -5,10 +5,10 @@ import baraholkateam.rest.model.ActualAdvertisement;
 import baraholkateam.rest.service.ActualAdvertisementService;
 import baraholkateam.rest.service.NotificationMessagesService;
 import baraholkateam.telegram_api_requests.TelegramAPIRequests;
+import baraholkateam.util.Configuration;
 import baraholkateam.util.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,20 +31,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
-import static baraholkateam.command.Command.ADVERTISEMENT_DELETE;
-import static baraholkateam.command.Command.NOTIFICATION_CALLBACK_DATA;
-import static baraholkateam.command.DeleteAdvertisement.NOT_ACTUAL_TEXT;
-
 @Slf4j
 @Component
 public class NotificationExecutor {
 
-    private static final String DELETE_IF_NOT_UPDATE = """
-            Вы пропустили 2 уведомления с вопросом об актуальности объявления.
-            Через %s часов объявление будет автоматически удалено, если не подтвердить его актуальность.""";
-    private static final String ASK_NEXT_UPDATE = """
-            Является ли данное объявление актуальным?""";
-    private static final String CANNOT_FORWARD_MESSAGE = "Невозможно переслать объявление из канала.";
     /**
      * Период времени до первого уведомления пользователя о подтверждении актуальности объявления.
      */
@@ -81,7 +71,7 @@ public class NotificationExecutor {
 
     @Lazy
     @Autowired
-    public NotificationExecutor(@Qualifier("BaraholkaBot") BaraholkaBot sender) {
+    public NotificationExecutor(BaraholkaBot sender) {
         this.sender = sender;
     }
 
@@ -98,30 +88,30 @@ public class NotificationExecutor {
                 editAdText(sender, String.valueOf(messageId));
                 actualAdvertisementService.removeAdvertisement(messageId);
                 deleteMessages(sender, chatId, messageId);
-                sendMessageWithoutDelete(sender, chatId, ADVERTISEMENT_DELETE, null);
+                sendMessageWithoutDelete(sender, chatId, Configuration.CommandMessage.ADVERTISEMENT_DELETE, null);
             } else if (attemptNum <= 2) {
                 actualAdvertisementService.setUpdateAttempt(messageId, attemptNum + 1);
                 Long forwardedMessageId =
                         telegramAPIRequests.forwardMessage(channelUsername, String.valueOf(chatId), messageId);
 
                 if (forwardedMessageId == null) {
-                    log.error(CANNOT_FORWARD_MESSAGE);
+                    log.error(Configuration.NotificationMessage.CANNOT_FORWARD_MESSAGE);
                     break;
                 }
 
                 if (attemptNum == 2) {
                     deleteMessages(sender, chatId, messageId);
                     sendMessage(sender, chatId, messageId,
-                            String.format("%s\n%s", String.format(DELETE_IF_NOT_UPDATE,
-                                    REPEAT_NOTIFICATION_PERIOD), ASK_NEXT_UPDATE), ifNextUpdate(chatId,
+                            String.format("%s\n%s", String.format(Configuration.NotificationMessage.DELETE_IF_NOT_UPDATE,
+                                    REPEAT_NOTIFICATION_PERIOD), Configuration.NotificationMessage.ASK_NEXT_UPDATE), ifNextUpdate(chatId,
                                     messageId,
                                     REPEAT_NOTIFICATION_TIME_UNIT.toMillis(REPEAT_NOTIFICATION_PERIOD)));
                 } else if (attemptNum == 1) {
                     deleteMessages(sender, chatId, messageId);
-                    sendMessage(sender, chatId, messageId, ASK_NEXT_UPDATE, ifNextUpdate(chatId, messageId,
+                    sendMessage(sender, chatId, messageId, Configuration.NotificationMessage.ASK_NEXT_UPDATE, ifNextUpdate(chatId, messageId,
                                     REPEAT_NOTIFICATION_TIME_UNIT.toMillis(REPEAT_NOTIFICATION_PERIOD)));
                 } else {
-                    sendMessage(sender, chatId, messageId, ASK_NEXT_UPDATE, ifNextUpdate(chatId, messageId,
+                    sendMessage(sender, chatId, messageId, Configuration.NotificationMessage.ASK_NEXT_UPDATE, ifNextUpdate(chatId, messageId,
                                     FIRST_REPEAT_NOTIFICATION_TIME_UNIT
                                             .toMillis(FIRST_REPEAT_NOTIFICATION_PERIOD)));
                 }
@@ -213,12 +203,12 @@ public class NotificationExecutor {
         List<InlineKeyboardButton> yesNoAnswer = new ArrayList<>(1);
         yesNoAnswer.add(InlineKeyboardButton.builder()
                 .text("Да")
-                .callbackData(String.format("%s %d %d %d 1", NOTIFICATION_CALLBACK_DATA, chatId, messageId,
+                .callbackData(String.format("%s %d %d %d 1", Configuration.CommandMessage.NOTIFICATION_CALLBACK_DATA, chatId, messageId,
                         addNextUpdateTime))
                 .build());
         yesNoAnswer.add(InlineKeyboardButton.builder()
                 .text("Нет")
-                .callbackData(String.format("%s %d %d 0 0", NOTIFICATION_CALLBACK_DATA, chatId, messageId))
+                .callbackData(String.format("%s %d %d 0 0", Configuration.CommandMessage.NOTIFICATION_CALLBACK_DATA, chatId, messageId))
                 .build());
         answers.add(yesNoAnswer);
         InlineKeyboardMarkup ikm = new InlineKeyboardMarkup();
@@ -228,7 +218,7 @@ public class NotificationExecutor {
 
     private void editAdText(AbsSender absSender, String messageId) {
         EditMessageCaption editMessage = new EditMessageCaption();
-        String editedText = String.format("%s\n\n%s", NOT_ACTUAL_TEXT,
+        String editedText = String.format("%s\n\n%s", Configuration.CommandMessage.NOT_ACTUAL_TEXT,
                 actualAdvertisementService.adText(Long.parseLong(messageId))
                 .substring(Tag.Actual.getName().length() + 1));
         editMessage.setChatId(channelChatId);

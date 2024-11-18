@@ -5,7 +5,8 @@ import baraholkateam.rest.service.ActualAdvertisementService;
 import baraholkateam.rest.service.ChosenTagsService;
 import baraholkateam.rest.service.PreviousStateService;
 import baraholkateam.telegram_api_requests.TelegramAPIRequests;
-import baraholkateam.util.State;
+import baraholkateam.util.Command;
+import baraholkateam.util.Configuration;
 import baraholkateam.util.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,15 +25,8 @@ import java.util.stream.Collectors;
 import static baraholkateam.bot.BaraholkaBot.SEARCH_ADVERTISEMENTS_LIMIT;
 
 @Component
-public class SearchAdvertisementsShowFoundAdvertisements extends Command {
+public class SearchAdvertisementsShowFoundAdvertisementsCommand extends BaraholkaBotCommand {
 
-    private static final String CANNOT_FIND_ADVERTISEMENTS = """
-            По Вашему запросу ничего не нашлось.
-            Вы можете вернуться в главное меню /%s или найти объявления по другим хэштегам /%s.""";
-    private static final String FOUND_ADVERTISEMENTS = """
-            По Вашему запросу нашлось объявлений: %d.
-            Показывается не более %s самых актуальных объявлений.
-            Вы можете вернуться в главное меню /%s или найти объявления по другим хэштегам /%s.""";
     @Autowired
     private ChosenTagsService chosenTagsService;
     @Autowired
@@ -44,47 +38,77 @@ public class SearchAdvertisementsShowFoundAdvertisements extends Command {
     @Value("${channel.username}")
     private String channelUsername;
 
-    public SearchAdvertisementsShowFoundAdvertisements() {
-        super(State.SearchAdvertisements_ShowFoundAdvertisements.getIdentifier(),
-                State.SearchAdvertisements_ShowFoundAdvertisements.getDescription());
+    public SearchAdvertisementsShowFoundAdvertisementsCommand() {
+        super(Command.SearchAdvertisements_ShowFoundAdvertisements.getIdentifier(),
+                Command.SearchAdvertisements_ShowFoundAdvertisements.getDescription());
     }
 
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] arguments) {
         List<Tag> tags = chosenTagsService.get(chat.getId());
 
-        if (previousStateService.get(chat.getId()) == State.SearchAdvertisements_AddProductCategories) {
-            String hashtags = NO_HASHTAGS;
+        if (previousStateService.get(chat.getId()) == Command.SearchAdvertisements_AddProductCategories) {
+            String hashtags = Configuration.CommandMessage.NO_HASHTAGS;
             if (tags != null && !tags.isEmpty()) {
                 hashtags = tags.stream()
                         .map(Tag::getName)
                         .collect(Collectors.joining(" "));
             }
-            sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
-                    String.format(CHOSEN_HASHTAGS, hashtags), null);
+
+            sendAnswer(
+                    absSender,
+                    user,
+                    chat,
+                    String.format(Configuration.CommandMessage.CHOSEN_HASHTAGS, hashtags)
+            );
 
             int count = forwardMessages(chat.getId());
 
             if (count == 0) {
-                sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
-                        String.format(CANNOT_FIND_ADVERTISEMENTS,
-                                State.MainMenu.getIdentifier(),
-                                State.SearchAdvertisements.getIdentifier()),
-                        showCommandButtons(List.of(State.MainMenu.getDescription(),
-                                State.SearchAdvertisements.getDescription())));
+                prepareCommandButtons(
+                        List.of(
+                                Command.MainMenu.getDescription(),
+                                Command.SearchAdvertisements.getDescription()
+                        )
+                );
+                sendAnswer(
+                        absSender,
+                        user,
+                        chat,
+                        String.format(
+                                Configuration.CommandMessage.CANNOT_FIND_ADVERTISEMENTS,
+                                Command.MainMenu.getIdentifier(),
+                                Command.SearchAdvertisements.getIdentifier()
+                        ),
+                        true);
             } else {
-                sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
-                        String.format(FOUND_ADVERTISEMENTS,
+                prepareCommandButtons(
+                        List.of(
+                                Command.MainMenu.getDescription(),
+                                Command.SearchAdvertisements.getDescription()
+                        )
+                );
+                sendAnswer(
+                        absSender,
+                        user,
+                        chat,
+                        String.format(
+                                Configuration.CommandMessage.FOUND_ADVERTISEMENTS,
                                 count,
                                 SEARCH_ADVERTISEMENTS_LIMIT,
-                                State.MainMenu.getIdentifier(),
-                                State.SearchAdvertisements.getIdentifier()),
-                        showCommandButtons(List.of(State.MainMenu.getDescription(),
-                                State.SearchAdvertisements.getDescription())));
+                                Command.MainMenu.getIdentifier(),
+                                Command.SearchAdvertisements.getIdentifier()
+                        ),
+                        true
+                );
             }
         } else {
-            sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
-                    String.format(INCORRECT_PREVIOUS_STATE, State.MainMenu.getIdentifier()), null);
+            sendAnswer(
+                    absSender,
+                    user,
+                    chat,
+                    String.format(Configuration.CommandMessage.INCORRECT_PREVIOUS_STATE, Command.MainMenu.getIdentifier())
+            );
         }
     }
 
@@ -105,7 +129,7 @@ public class SearchAdvertisementsShowFoundAdvertisements extends Command {
         return count;
     }
 
-    private ReplyKeyboardMarkup showCommandButtons(List<String> commands) {
+    private void prepareCommandButtons(List<String> commands) {
         ReplyKeyboardMarkup rkm = new ReplyKeyboardMarkup();
         rkm.setSelective(true);
         rkm.setResizeKeyboard(true);
@@ -117,7 +141,8 @@ public class SearchAdvertisementsShowFoundAdvertisements extends Command {
             commandButtons.add(commandButton);
         }
         rkm.setKeyboard(commandButtons);
-        return rkm;
+
+        replyKeyboard = rkm;
     }
 
 }

@@ -2,7 +2,8 @@ package baraholkateam.command;
 
 import baraholkateam.rest.model.ActualAdvertisement;
 import baraholkateam.rest.service.ActualAdvertisementService;
-import baraholkateam.util.State;
+import baraholkateam.util.Command;
+import baraholkateam.util.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Chat;
@@ -17,21 +18,13 @@ import java.util.List;
 import static baraholkateam.rest.model.ActualAdvertisement.DESCRIPTION_TEXT;
 
 @Component
-public class DeleteAdvertisement extends Command {
+public class DeleteAdvertisementCommand extends BaraholkaBotCommand {
 
-    public static final String NOT_ACTUAL_TEXT = "<b>НЕАКТУАЛЬНО</b>";
-    public static final String USER_ACTUAL_ADS_TEXT = """
-            Здесь представлены краткие описания Ваших актуальных объявлений.
-            Пожалуйста, выберите одно из них для удаления:""";
-    public static final String DELETE_AD = """
-            Удалить выбранное объявление?""";
-    private static final String NO_ADS_TO_DELETE = """
-            У вас нет актуальных объявлений.""";
     @Autowired
     private ActualAdvertisementService actualAdvertisementService;
 
-    public DeleteAdvertisement() {
-        super(State.DeleteAdvertisement.getIdentifier(), State.DeleteAdvertisement.getDescription());
+    public DeleteAdvertisementCommand() {
+        super(Command.DeleteAdvertisement.getIdentifier(), Command.DeleteAdvertisement.getDescription());
     }
 
     @Override
@@ -40,15 +33,14 @@ public class DeleteAdvertisement extends Command {
         List<ActualAdvertisement> ads = actualAdvertisementService.getByChatId(chatId);
 
         if (ads == null || ads.isEmpty()) {
-            sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(), NO_ADS_TO_DELETE,
-                    null);
+            sendAnswer(absSender, user, chat, Configuration.CommandMessage.NO_ADS_TO_DELETE);
         } else {
-            sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(), USER_ACTUAL_ADS_TEXT,
-                    sendInlineKeyBoardMessage(ads));
+            prepareInlineKeyBoardMessage(ads);
+            sendAnswer(absSender, user, chat, Configuration.CommandMessage.USER_ACTUAL_ADS_TEXT, true);
         }
     }
 
-    public InlineKeyboardMarkup sendInlineKeyBoardMessage(List<ActualAdvertisement> ads) {
+    private void prepareInlineKeyBoardMessage(List<ActualAdvertisement> ads) {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
 
@@ -62,7 +54,7 @@ public class DeleteAdvertisement extends Command {
                                     descIndex + DESCRIPTION_TEXT.length() + 40)
                             .concat("...")
             );
-            inlineKeyboardButton.setCallbackData(String.format("%s %d", DELETE_CALLBACK_TEXT, ad.getMessageId()));
+            inlineKeyboardButton.setCallbackData(String.format("%s %d", Configuration.CommandMessage.DELETE_CALLBACK_TEXT, ad.getMessageId()));
             List<InlineKeyboardButton> keyboardButtonsRow = new ArrayList<>();
             keyboardButtonsRow.add(inlineKeyboardButton);
             rowList.add(keyboardButtonsRow);
@@ -70,7 +62,7 @@ public class DeleteAdvertisement extends Command {
 
         inlineKeyboardMarkup.setKeyboard(rowList);
 
-        return inlineKeyboardMarkup;
+        replyKeyboard = inlineKeyboardMarkup;
     }
 
 }

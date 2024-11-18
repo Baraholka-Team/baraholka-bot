@@ -1,12 +1,13 @@
 package baraholkateam.rest.controller;
 
 import baraholkateam.bot.BaraholkaBot;
-import baraholkateam.command.NewAdvertisementConfirm;
+import baraholkateam.command.NewAdvertisementConfirmCommand;
 import baraholkateam.rest.model.ActualAdvertisement;
 import baraholkateam.rest.model.CurrentAdvertisement;
 import baraholkateam.rest.service.ActualAdvertisementService;
 import baraholkateam.rest.service.CurrentAdvertisementService;
 import baraholkateam.telegram_api_requests.TelegramAPIRequests;
+import baraholkateam.util.Configuration;
 import baraholkateam.util.Tag;
 import baraholkateam.util.TelegramUserInfo;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,7 +37,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-import static baraholkateam.command.DeleteAdvertisement.NOT_ACTUAL_TEXT;
 import static baraholkateam.notification.NotificationExecutor.FIRST_REPEAT_NOTIFICATION_PERIOD;
 import static baraholkateam.notification.NotificationExecutor.FIRST_REPEAT_NOTIFICATION_TIME_UNIT;
 
@@ -51,7 +51,7 @@ public class BaraholkaBotRestControllerHelper {
     @Autowired
     private ActualAdvertisementService actualAdvertisementService;
     @Autowired
-    private NewAdvertisementConfirm newAdvertisementConfirm;
+    private NewAdvertisementConfirmCommand newAdvertisementConfirmCommand;
     @Autowired
     private BaraholkaBot baraholkaBot;
     @Value("${bot.token}")
@@ -157,8 +157,7 @@ public class BaraholkaBotRestControllerHelper {
             try {
                 File photoFile = File.createTempFile("photo", "temp");
                 Files.write(Path.of(photoFile.getPath()), Base64.getDecoder().decode(photos.get(0)));
-                sentAd = newAdvertisementConfirm.sendPhotoMessage(
-                        baraholkaBot,
+                sentAd = baraholkaBot.sendPhotoMessage(
                         Long.parseLong(channelChatId),
                         photoFile,
                         currentAdvertisementService.getAdvertisementText(currentAdvertisement.getChatId())
@@ -181,10 +180,11 @@ public class BaraholkaBotRestControllerHelper {
                 }
             }
 
-            List<Message> messages = newAdvertisementConfirm.sendPhotoMediaGroup(baraholkaBot,
+            List<Message> messages = baraholkaBot.sendPhotoMediaGroup(
                     Long.parseLong(channelChatId),
                     photoFiles,
-                    currentAdvertisementService.getAdvertisementText(currentAdvertisement.getChatId()));
+                    currentAdvertisementService.getAdvertisementText(currentAdvertisement.getChatId())
+            );
             sentAd = messages.get(0);
         }
 
@@ -212,7 +212,7 @@ public class BaraholkaBotRestControllerHelper {
         EditMessageCaption editMessage = new EditMessageCaption();
         String adText = actualAdvertisementService.adText(messageId)
                 .substring(Tag.Actual.getName().length() + 1);
-        String editedText = String.format("%s\n\n%s", NOT_ACTUAL_TEXT, adText);
+        String editedText = String.format("%s\n\n%s", Configuration.CommandMessage.NOT_ACTUAL_TEXT, adText);
         editMessage.setChatId(channelChatId);
         editMessage.setMessageId(Integer.parseInt(String.valueOf(messageId)));
         editMessage.setParseMode(ParseMode.HTML);

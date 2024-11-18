@@ -5,7 +5,8 @@ import lombok.Getter;
 import java.util.Map;
 import java.util.Objects;
 
-public enum State {
+public enum Command {
+    UnknownCommand("unknown", "Неизвестная команда"),
     Start("start", "Старт"),
     Help("help", "Справочная информация по боту"),
     MainMenu("menu", "Главное меню"),
@@ -37,15 +38,15 @@ public enum State {
     private final String identifier;
     @Getter
     private final String description;
-    private static final Map<State, State> NEXT_STATE = getNextStates();
-    private static final Map<State, State> PREVIOUS_STATE = getPreviousState();
+    private static final Map<Command, Command> NEXT_COMMAND = getNextCommand();
+    private static final Map<Command, Command> PREVIOUS_COMMAND = getPreviousCommand();
 
-    State(String identifier, String description) {
+    Command(String identifier, String description) {
         this.identifier = identifier;
         this.description = description;
     }
 
-    private static Map<State, State> getNextStates() {
+    private static Map<Command, Command> getNextCommand() {
         return Map.ofEntries(
                 Map.entry(SearchAdvertisements, SearchAdvertisements_AddAdvertisementTypes),
                 Map.entry(SearchAdvertisements_AddAdvertisementTypes, SearchAdvertisements_AddProductCategories),
@@ -66,7 +67,7 @@ public enum State {
         );
     }
 
-    private static Map<State, State> getPreviousState() {
+    private static Map<Command, Command> getPreviousCommand() {
         return Map.ofEntries(
                 Map.entry(Start, Start),
                 Map.entry(Help, MainMenu),
@@ -94,38 +95,38 @@ public enum State {
         );
     }
 
-    public static State findState(String text) {
-        for (State state : State.values()) {
-            if (Objects.equals(state.getIdentifier(), text)) {
-                return state;
+    public static Command findCommand(String text) {
+        for (Command command : Command.values()) {
+            if (Objects.equals(command.getIdentifier(), text)) {
+                return command;
             }
         }
         return null;
     }
 
-    public static State findStateByDescription(String text) {
-        for (State state : State.values()) {
-            if (Objects.equals(state.getDescription(), text)) {
-                return state;
+    public static Command findCommandByDescription(String text) {
+        for (Command command : Command.values()) {
+            if (Objects.equals(command.getDescription(), text)) {
+                return command;
             }
         }
         return null;
     }
 
-    public static State nextState(State currentState) {
-        if (currentState == null) {
+    public static Command nextCommand(Command currentCommand) {
+        if (currentCommand == null) {
             return null;
         }
-        State nextState = NEXT_STATE.get(currentState);
-        return nextState == null ? currentState : nextState;
+        Command nextCommand = NEXT_COMMAND.get(currentCommand);
+        return nextCommand == null ? currentCommand : nextCommand;
     }
 
-    public static State previousState(State currentState) {
-        if (currentState == null) {
+    public static Command previousCommand(Command currentCommand) {
+        if (currentCommand == null) {
             return null;
         }
-        State previousState = PREVIOUS_STATE.get(currentState);
-        return previousState == null ? currentState : previousState;
+        Command previousCommand = PREVIOUS_COMMAND.get(currentCommand);
+        return previousCommand == null ? currentCommand : previousCommand;
     }
 
 }

@@ -1,48 +1,46 @@
 package baraholkateam.command;
 
-import baraholkateam.util.State;
+import baraholkateam.util.Command;
+import baraholkateam.util.Configuration;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
 import java.util.List;
 
 @Component
-public class MainMenuCommand extends Command {
-
-    private static final String MAIN_MENU = """
-            Добро пожаловать в главное меню. Здесь Вы можете:
-            1. Создать новое объявление: /%s;
-            2. Удалить созданное объявление: /%s;
-            3. Найти нужные объявления по хэштегам: /%s;
-            4. Посмотреть список созданных актуальных объявлений: /%s;
-            5. Получить справку по командам бота: /%s.""";
+public class MainMenuCommand extends BaraholkaBotCommand {
 
     public MainMenuCommand() {
-        super(State.MainMenu.getIdentifier(), State.MainMenu.getDescription());
+        super(Command.MainMenu.getIdentifier(), Command.MainMenu.getDescription());
     }
 
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
-        sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), user.getUserName(),
-                String.format(MAIN_MENU,
-                        State.NewAdvertisement.getIdentifier(),
-                        State.DeleteAdvertisement.getIdentifier(),
-                        State.SearchAdvertisements.getIdentifier(),
-                        State.UserAdvertisements.getIdentifier(),
-                        State.Help.getIdentifier()
-                ), getButtons());
+        prepareButtons();
+        sendAnswer(
+                absSender,
+                user,
+                chat,
+                String.format(Configuration.CommandMessage.MAIN_MENU,
+                        Command.NewAdvertisement.getIdentifier(),
+                        Command.DeleteAdvertisement.getIdentifier(),
+                        Command.SearchAdvertisements.getIdentifier(),
+                        Command.UserAdvertisements.getIdentifier(),
+                        Command.Help.getIdentifier()
+                ),
+                true
+        );
     }
 
-    private ReplyKeyboard getButtons() {
-        return getReplyKeyboard(List.of(
-                State.NewAdvertisement.getDescription(),
-                State.DeleteAdvertisement.getDescription(),
-                State.SearchAdvertisements.getDescription(),
-                State.UserAdvertisements.getDescription(),
-                State.Help.getDescription()
+    private void prepareButtons() {
+        replyKeyboard = prepareReplyKeyboard(List.of(
+                Command.NewAdvertisement.getDescription(),
+                Command.DeleteAdvertisement.getDescription(),
+                Command.SearchAdvertisements.getDescription(),
+                Command.UserAdvertisements.getDescription(),
+                Command.Help.getDescription()
         ), false);
     }
 

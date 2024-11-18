@@ -2,7 +2,7 @@ package baraholkateam.rest.service;
 
 import baraholkateam.rest.model.CurrentState;
 import baraholkateam.rest.repository.CurrentStateRepository;
-import baraholkateam.util.State;
+import baraholkateam.util.Command;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ public class CurrentStateService {
     @Autowired
     private CurrentStateRepository currentStateRepository;
 
-    public State get(Long chatId) {
+    public Command get(Long chatId) {
         Optional<CurrentState> currentStateRepositoryOptional = currentStateRepository.findById(chatId);
         if (currentStateRepositoryOptional.isPresent()) {
             return currentStateRepositoryOptional.get().getState();
@@ -29,8 +29,8 @@ public class CurrentStateService {
         }
     }
 
-    public void put(Long chatId, State state) {
-        currentStateRepository.save(new CurrentState(chatId, state));
+    public void put(Long chatId, Command command) {
+        currentStateRepository.save(new CurrentState(chatId, command));
     }
 
 }
