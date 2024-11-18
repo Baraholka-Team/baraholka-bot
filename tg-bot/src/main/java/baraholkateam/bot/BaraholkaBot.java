@@ -19,8 +19,8 @@ import baraholkateam.command.NewAdvertisementConfirmPhotoCommand;
 import baraholkateam.command.NewAdvertisementConfirmPriceCommand;
 import baraholkateam.command.NonCommand;
 import baraholkateam.command.SearchAdvertisementsCommand;
-import baraholkateam.command.SearchAdvertisementsAddAdvertisementTypes;
-import baraholkateam.command.SearchAdvertisementsAddProductCategories;
+import baraholkateam.command.SearchAdvertisementsAddAdvertisementTypesCommand;
+import baraholkateam.command.SearchAdvertisementsAddProductCategoriesCommand;
 import baraholkateam.command.SearchAdvertisementsShowFoundAdvertisementsCommand;
 import baraholkateam.command.StartCommand;
 import baraholkateam.command.UserAdvertisementsCommand;
@@ -152,11 +152,11 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
     @Autowired
     private SearchAdvertisementsCommand searchAdvertisementsCommand;
     @Autowired
-    private SearchAdvertisementsAddAdvertisementTypes searchAdvertisementsAddAdvertisementTypes;
+    private SearchAdvertisementsAddAdvertisementTypesCommand searchAdvertisementsAddAdvertisementTypesCommand;
     @Autowired
-    private SearchAdvertisementsAddProductCategories searchAdvertisementsAddProductCategories;
+    private SearchAdvertisementsAddProductCategoriesCommand searchAdvertisementsAddProductCategoriesCommand;
     @Autowired
-    private SearchAdvertisementsShowFoundAdvertisementsCommand searchAdvertisementsShowFoundAdvertisements;
+    private SearchAdvertisementsShowFoundAdvertisementsCommand searchAdvertisementsShowFoundAdvertisementsCommand;
 
     public BaraholkaBot(
             @Value("${bot.name}") String botName,
@@ -232,9 +232,9 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
         register(newAdvertisementAddSocialCommand);
         register(newAdvertisementConfirmCommand);
         register(searchAdvertisementsCommand);
-        register(searchAdvertisementsAddAdvertisementTypes);
-        register(searchAdvertisementsAddProductCategories);
-        register(searchAdvertisementsShowFoundAdvertisements);
+        register(searchAdvertisementsAddAdvertisementTypesCommand);
+        register(searchAdvertisementsAddProductCategoriesCommand);
+        register(searchAdvertisementsShowFoundAdvertisementsCommand);
     }
 
     @Override

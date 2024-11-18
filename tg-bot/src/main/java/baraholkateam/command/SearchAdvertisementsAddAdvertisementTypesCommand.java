@@ -16,23 +16,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class SearchAdvertisementsAddProductCategories extends BaraholkaBotCommand {
+public class SearchAdvertisementsAddAdvertisementTypesCommand extends BaraholkaBotCommand {
 
     @Autowired
     private ChosenTagsService chosenTagsService;
     @Autowired
     private PreviousStateService previousStateService;
 
-    public SearchAdvertisementsAddProductCategories() {
-        super(Command.SearchAdvertisements_AddProductCategories.getIdentifier(),
-                Command.SearchAdvertisements_AddProductCategories.getDescription());
+    public SearchAdvertisementsAddAdvertisementTypesCommand() {
+        super(Command.SearchAdvertisements_AddAdvertisementTypes.getIdentifier(),
+                Command.SearchAdvertisements_AddAdvertisementTypes.getDescription());
     }
 
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] arguments) {
         List<Tag> tags = chosenTagsService.get(chat.getId());
 
-        if (previousStateService.get(chat.getId()) == Command.SearchAdvertisements_AddAdvertisementTypes) {
+        if (previousStateService.get(chat.getId()) == Command.SearchAdvertisements) {
             String hashtags = Configuration.CommandMessage.NO_HASHTAGS;
             if (tags != null && !tags.isEmpty()) {
                 hashtags = tags.stream()
@@ -49,12 +49,12 @@ public class SearchAdvertisementsAddProductCategories extends BaraholkaBotComman
                     true
             );
 
-            prepareTags(TagType.ProductCategories, true);
+            prepareTags(TagType.AdvertisementType, true);
             sendAnswer(
                     absSender,
                     user,
                     chat,
-                    String.format(Configuration.CommandMessage.CHOOSE_PRODUCT_CATEGORY, Configuration.CommandMessage.NEXT_BUTTON_TEXT),
+                    String.format(Configuration.CommandMessage.CHOOSE_ADVERTISEMENT_TYPE, Configuration.CommandMessage.NEXT_BUTTON_TEXT),
                     true
             );
         } else {
