@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Предыдущее состояние бота.
+ * Предыдущее состояние бота
  */
 @Entity
 @Table(name = "previous_state")

@@ -1,7 +1,9 @@
 package baraholkateam.command;
 
-import baraholkateam.rest.model.ActualAdvertisement;
-import baraholkateam.rest.service.ActualAdvertisementService;
+import baraholkateam.rest.dto.AdvertisementDTO;
+import baraholkateam.rest.mapper.AdvertisementMapper;
+import baraholkateam.rest.model.AdvertisementEntity;
+import baraholkateam.rest.service.AdvertisementService;
 import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,13 +17,11 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 import java.util.ArrayList;
 import java.util.List;
 
-import static baraholkateam.rest.model.ActualAdvertisement.DESCRIPTION_TEXT;
-
 @Component
 public class DeleteAdvertisementCommand extends BaraholkaBotCommand {
 
     @Autowired
-    private ActualAdvertisementService actualAdvertisementService;
+    private AdvertisementService advertisementService;
 
     public DeleteAdvertisementCommand() {
         super(Command.DeleteAdvertisement.getIdentifier(), Command.DeleteAdvertisement.getDescription());
@@ -30,7 +30,7 @@ public class DeleteAdvertisementCommand extends BaraholkaBotCommand {
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] arguments) {
         long chatId = chat.getId();
-        List<ActualAdvertisement> ads = actualAdvertisementService.getByChatId(chatId);
+        List<AdvertisementEntity> ads = advertisementService.getByChatId(chatId);
 
         if (ads == null || ads.isEmpty()) {
             sendAnswer(absSender, user, chat, Configuration.CommandMessage.NO_ADS_TO_DELETE);
@@ -40,21 +40,22 @@ public class DeleteAdvertisementCommand extends BaraholkaBotCommand {
         }
     }
 
-    private void prepareInlineKeyBoardMessage(List<ActualAdvertisement> ads) {
+    private void prepareInlineKeyBoardMessage(List<AdvertisementEntity> advertisementEntities) {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
 
-        ads.forEach(ad -> {
+        advertisementEntities.forEach(advertisement -> {
+            AdvertisementDTO advertisementDTO = AdvertisementMapper.getAdvertisementDTO(advertisement);
             InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
-            String description = ad.getAdvertisementText();
-            int descIndex = description.indexOf(DESCRIPTION_TEXT);
+            String description = advertisementDTO.getAdvertisementText();
+            int descIndex = description.indexOf(Configuration.Advertisement.DESCRIPTION_TEXT);
             inlineKeyboardButton.setText(
                     description
-                            .substring(descIndex + DESCRIPTION_TEXT.length(),
-                                    descIndex + DESCRIPTION_TEXT.length() + 40)
+                            .substring(descIndex + Configuration.Advertisement.DESCRIPTION_TEXT.length(),
+                                    descIndex + Configuration.Advertisement.DESCRIPTION_TEXT.length() + 40)
                             .concat("...")
             );
-            inlineKeyboardButton.setCallbackData(String.format("%s %d", Configuration.CommandMessage.DELETE_CALLBACK_TEXT, ad.getMessageId()));
+            inlineKeyboardButton.setCallbackData(String.format("%s %d", Configuration.CommandMessage.DELETE_CALLBACK_TEXT, advertisementDTO.getMessageId()));
             List<InlineKeyboardButton> keyboardButtonsRow = new ArrayList<>();
             keyboardButtonsRow.add(inlineKeyboardButton);
             rowList.add(keyboardButtonsRow);

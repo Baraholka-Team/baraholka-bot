@@ -5,7 +5,7 @@ import baraholkateam.rest.model.CurrentAdvertisement;
 import baraholkateam.rest.service.CurrentAdvertisementService;
 import baraholkateam.telegram_api_requests.TelegramAPIRequests;
 import baraholkateam.util.Configuration;
-import baraholkateam.util.Converter;
+import baraholkateam.util.PhotoConverter;
 import baraholkateam.util.Command;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,11 +62,11 @@ public class NewAdvertisementConfirmCommand extends BaraholkaBotCommand {
         );
 
         if (photos.size() == 1) {
-            ((BaraholkaBot) absSender).sendPhotoMessage(chat.getId(), Converter.convertBase64StringToPhoto(photos.get(0)), text);
+            ((BaraholkaBot) absSender).sendPhotoMessage(chat.getId(), PhotoConverter.convertBase64StringToPhoto(photos.get(0)), text);
         } else if (photos.size() > 1) {
             List<File> photoFiles = new ArrayList<>();
             for (String photo : photos) {
-                photoFiles.add(Objects.requireNonNull(Converter.convertBase64StringToPhoto(photo)));
+                photoFiles.add(Objects.requireNonNull(PhotoConverter.convertBase64StringToPhoto(photo)));
             }
             ((BaraholkaBot) absSender).sendPhotoMediaGroup(chat.getId(), photoFiles, text);
         }

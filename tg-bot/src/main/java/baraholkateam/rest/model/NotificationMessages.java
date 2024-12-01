@@ -12,7 +12,7 @@ import lombok.Setter;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 /**
- * Сообщения, отправляемые пользователю во время уточнения актуальности уведомлений.
+ * Сообщения, отправляемые пользователю во время уточнения актуальности уведомлений
  */
 @Setter
 @Getter

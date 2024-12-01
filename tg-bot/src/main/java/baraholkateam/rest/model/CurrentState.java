@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Текущее состояние бота.
+ * Текущее состояние бота
  */
 @Entity
 @Table(name = "current_state")

@@ -1,7 +1,7 @@
 package baraholkateam.command;
 
-import baraholkateam.rest.model.ActualAdvertisement;
-import baraholkateam.rest.repository.ActualAdvertisementRepository;
+import baraholkateam.rest.model.AdvertisementEntity;
+import baraholkateam.rest.repository.AdvertisementRepository;
 import baraholkateam.rest.service.LastSentMessageService;
 import baraholkateam.telegram_api_requests.TelegramAPIRequests;
 import baraholkateam.util.Command;
@@ -21,7 +21,7 @@ public class UserAdvertisementsCommand extends BaraholkaBotCommand {
     @Autowired
     private TelegramAPIRequests telegramAPIRequests;
     @Autowired
-    private ActualAdvertisementRepository actualAdvertisementRepository;
+    private AdvertisementRepository advertisementRepository;
     @Autowired
     private LastSentMessageService lastSentMessageService;
     @Value("${channel.chat_id}")
@@ -33,10 +33,10 @@ public class UserAdvertisementsCommand extends BaraholkaBotCommand {
 
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] arguments) {
-        List<ActualAdvertisement> actualAdvertisements = actualAdvertisementRepository
+        List<AdvertisementEntity> advertisementEntities = advertisementRepository
                 .findAllByOwnerChatId(chat.getId());
 
-        if (actualAdvertisements != null && !actualAdvertisements.isEmpty()) {
+        if (advertisementEntities != null && !advertisementEntities.isEmpty()) {
             sendAnswer(
                     absSender,
                     user,
@@ -44,11 +44,11 @@ public class UserAdvertisementsCommand extends BaraholkaBotCommand {
                     Configuration.CommandMessage.USER_ADVERTISEMENTS
             );
 
-            for (ActualAdvertisement actualAdvertisement : actualAdvertisements) {
+            for (AdvertisementEntity advertisementEntity : advertisementEntities) {
                 telegramAPIRequests.forwardMessage(
                         channelChatId,
-                        String.valueOf(actualAdvertisement.getOwnerChatId()),
-                        actualAdvertisement.getMessageId()
+                        String.valueOf(advertisementEntity.getOwnerChatId()),
+                        advertisementEntity.getMessageId()
                 );
             }
         } else {

@@ -1,8 +1,8 @@
 package baraholkateam.notification;
 
 import baraholkateam.bot.BaraholkaBot;
-import baraholkateam.rest.model.ActualAdvertisement;
-import baraholkateam.rest.service.ActualAdvertisementService;
+import baraholkateam.rest.model.AdvertisementEntity;
+import baraholkateam.rest.service.AdvertisementService;
 import baraholkateam.rest.service.NotificationMessagesService;
 import baraholkateam.telegram_api_requests.TelegramAPIRequests;
 import baraholkateam.util.Configuration;
@@ -56,7 +56,7 @@ public class NotificationExecutor {
     private TelegramAPIRequests telegramAPIRequests;
 
     @Autowired
-    private ActualAdvertisementService actualAdvertisementService;
+    private AdvertisementService advertisementService;
 
     @Autowired
     private NotificationMessagesService notificationMessagesService;
@@ -78,19 +78,18 @@ public class NotificationExecutor {
     @Scheduled(initialDelayString = "${notificator.initial-delay-in-milliseconds}",
             fixedRateString = "${notificator.fixed-rate-in-milliseconds}")
     private void startNotificationExecutor() {
-        List<ActualAdvertisement> actualAdvertisements =
-                     actualAdvertisementService.askActualAdvertisements(System.currentTimeMillis());
-        for (ActualAdvertisement actualAdvertisement : actualAdvertisements) {
-            int attemptNum = actualAdvertisement.getUpdateAttempt();
-            long chatId = actualAdvertisement.getOwnerChatId();
-            long messageId = actualAdvertisement.getMessageId();
+        List<AdvertisementEntity> advertisementEntities = advertisementService.askActualAdvertisements(System.currentTimeMillis());
+        for (AdvertisementEntity advertisementEntity : advertisementEntities) {
+            int attemptNum = advertisementEntity.getUpdateAttempt();
+            long chatId = advertisementEntity.getOwnerChatId();
+            long messageId = advertisementEntity.getMessageId();
             if (attemptNum == 3) {
                 editAdText(sender, String.valueOf(messageId));
-                actualAdvertisementService.removeAdvertisement(messageId);
+                advertisementService.removeAdvertisement(messageId);
                 deleteMessages(sender, chatId, messageId);
                 sendMessageWithoutDelete(sender, chatId, Configuration.CommandMessage.ADVERTISEMENT_DELETE, null);
             } else if (attemptNum <= 2) {
-                actualAdvertisementService.setUpdateAttempt(messageId, attemptNum + 1);
+                advertisementService.setUpdateAttempt(messageId, attemptNum + 1);
                 Long forwardedMessageId =
                         telegramAPIRequests.forwardMessage(channelUsername, String.valueOf(chatId), messageId);
 
@@ -219,7 +218,7 @@ public class NotificationExecutor {
     private void editAdText(AbsSender absSender, String messageId) {
         EditMessageCaption editMessage = new EditMessageCaption();
         String editedText = String.format("%s\n\n%s", Configuration.CommandMessage.NOT_ACTUAL_TEXT,
-                actualAdvertisementService.adText(Long.parseLong(messageId))
+                advertisementService.adText(Long.parseLong(messageId))
                 .substring(Tag.Actual.getName().length() + 1));
         editMessage.setChatId(channelChatId);
         editMessage.setMessageId(Integer.parseInt(messageId));

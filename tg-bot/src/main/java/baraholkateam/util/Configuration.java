@@ -152,4 +152,12 @@ public final class Configuration {
         String CANNOT_FORWARD_MESSAGE = "Невозможно переслать объявление из канала.";
     }
 
+    public interface Advertisement {
+        String DESCRIPTION_TEXT = "Описание: ";
+        String PRICE_TEXT = "Цена: %s руб.";
+        String PHONE_NUMBER = "Номер телефона: <span class=\"tg-spoiler\">%s</span>";
+        String CONTACTS = "Контакты: ";
+        String CONTACT = "<span class=\"tg-spoiler\">%s</span>";
+    }
+
 }

@@ -7,9 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-/**
- *  JPA репозиторий сущности "NotificationMessages".
- */
 @Repository
 public interface NotificationMessagesRepository extends JpaRepository<NotificationMessages, NotificationMessagesId> {
 

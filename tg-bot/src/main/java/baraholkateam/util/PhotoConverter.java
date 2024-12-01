@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.util.Base64;
 
 @Slf4j
-public class Converter {
+public class PhotoConverter {
 
     public static String convertPhotoToBase64String(File photo) {
         try {

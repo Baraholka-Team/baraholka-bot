@@ -1,7 +1,7 @@
 package baraholkateam.command;
 
-import baraholkateam.rest.model.ActualAdvertisement;
-import baraholkateam.rest.service.ActualAdvertisementService;
+import baraholkateam.rest.model.AdvertisementEntity;
+import baraholkateam.rest.service.AdvertisementService;
 import baraholkateam.rest.service.ChosenTagsService;
 import baraholkateam.rest.service.PreviousStateService;
 import baraholkateam.telegram_api_requests.TelegramAPIRequests;
@@ -32,7 +32,7 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
     @Autowired
     private TelegramAPIRequests telegramAPIRequests;
     @Autowired
-    private ActualAdvertisementService actualAdvertisementService;
+    private AdvertisementService advertisementService;
     @Autowired
     private PreviousStateService previousStateService;
     @Value("${channel.username}")
@@ -117,11 +117,11 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
         if (tags == null || tags.isEmpty()) {
             return 0;
         }
-        List<ActualAdvertisement> sortedAds = actualAdvertisementService.tagsSearch(tags.stream()
+        List<AdvertisementEntity> sortedAds = advertisementService.tagsSearch(tags.stream()
                 .map(Tag::getName)
                 .toArray(String[]::new));
         int count = 0;
-        for (ActualAdvertisement sortedAd : sortedAds) {
+        for (AdvertisementEntity sortedAd : sortedAds) {
             telegramAPIRequests.forwardMessage(channelUsername, String.valueOf(chatId),
                     sortedAd.getMessageId());
             count++;
