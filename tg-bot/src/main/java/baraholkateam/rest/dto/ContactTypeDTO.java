@@ -10,6 +10,9 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
+/**
+ * Бизнес сущность типов контактов пользователя из объявления
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,7 +22,6 @@ public class ContactTypeDTO implements Serializable {
 
     @JsonProperty("contactTypeId")
     private Long contactTypeId;
-
     @JsonProperty("contactTypeName")
     private ContactType contactTypeName;
 

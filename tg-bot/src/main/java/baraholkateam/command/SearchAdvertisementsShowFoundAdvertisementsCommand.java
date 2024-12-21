@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static baraholkateam.bot.BaraholkaBot.SEARCH_ADVERTISEMENTS_LIMIT;
-
 @Component
 public class SearchAdvertisementsShowFoundAdvertisementsCommand extends BaraholkaBotCommand {
 
@@ -37,6 +35,8 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
     private PreviousStateService previousStateService;
     @Value("${channel.username}")
     private String channelUsername;
+    @Value("${search_advertisement_limit}")
+    private Integer searchAdvertisementsLimit;
 
     public SearchAdvertisementsShowFoundAdvertisementsCommand() {
         super(Command.SearchAdvertisements_ShowFoundAdvertisements.getIdentifier(),
@@ -95,7 +95,7 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
                         String.format(
                                 Configuration.CommandMessage.FOUND_ADVERTISEMENTS,
                                 count,
-                                SEARCH_ADVERTISEMENTS_LIMIT,
+                                searchAdvertisementsLimit,
                                 Command.MainMenu.getIdentifier(),
                                 Command.SearchAdvertisements.getIdentifier()
                         ),
@@ -117,7 +117,7 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
         if (tags == null || tags.isEmpty()) {
             return 0;
         }
-        List<AdvertisementEntity> sortedAds = advertisementService.tagsSearch(tags.stream()
+        List<AdvertisementEntity> sortedAds = advertisementService.searchAdvertisementsWithTags(tags.stream()
                 .map(Tag::getName)
                 .toArray(String[]::new));
         int count = 0;

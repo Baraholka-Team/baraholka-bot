@@ -17,17 +17,14 @@ public class AdvertisementMapper {
     public static AdvertisementEntity getAdvertisementEntity(AdvertisementDTO advertisementDTO) {
         AdvertisementEntityId advertisementEntityId = AdvertisementEntityId.builder()
                 .messageId(advertisementDTO.getMessageId())
-                .ownerChatId(advertisementDTO.getOwnerChatId())
+                .chatId(advertisementDTO.getChatId())
                 .build();
-
         List<PhotoEntity> photoEntityList = PhotoMapper.getPhotoEntityList(advertisementDTO.getPhotos());
-
         List<TagEntity> tagEntityList = TagMapper.getTagEntityList(advertisementDTO.getTags());
-
         List<ContactEntity> contactEntityList = ContactMapper.getContactEntityList(advertisementDTO.getContacts());
-
         return AdvertisementEntity.builder()
                 .advertisementEntityId(advertisementEntityId)
+                .userId(advertisementDTO.getUserId())
                 .photos(photoEntityList)
                 .description(advertisementDTO.getDescription())
                 .tags(tagEntityList)
@@ -41,14 +38,12 @@ public class AdvertisementMapper {
 
     public static AdvertisementDTO getAdvertisementDTO(AdvertisementEntity advertisementEntity) {
         List<PhotoDTO> photoDTOList = PhotoMapper.getPhotoDTOList(advertisementEntity.getPhotos());
-
         List<TagDTO> tagDTOList = TagMapper.getTagDTOList(advertisementEntity.getTags());
-
         List<ContactDTO> contactDTOList = ContactMapper.getContactDTOList(advertisementEntity.getContacts());
-
         return AdvertisementDTO.builder()
                 .messageId(advertisementEntity.getAdvertisementEntityId().getMessageId())
-                .ownerChatId(advertisementEntity.getAdvertisementEntityId().getOwnerChatId())
+                .chatId(advertisementEntity.getAdvertisementEntityId().getChatId())
+                .userId(advertisementEntity.getUserId())
                 .photos(photoDTOList)
                 .description(advertisementEntity.getDescription())
                 .tags(tagDTOList)

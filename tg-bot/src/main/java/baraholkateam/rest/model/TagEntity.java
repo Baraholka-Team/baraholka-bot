@@ -32,13 +32,16 @@ public class TagEntity {
     private Long tagId;
 
     @ManyToOne
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "id", nullable = false)
     private TagTypeEntity tagType;
 
-    @Column(name = "name")
+    @Column(name = "name", length = 64, nullable = false)
     private String tag;
 
     @ManyToMany(mappedBy = "tags")
-    private List<AdvertisementEntity> advertisement;
+    private List<AdvertisementEntity> advertisements;
+
+    @ManyToMany(mappedBy = "tags")
+    private List<ChosenTagsEntity> chosenTags;
 
 }

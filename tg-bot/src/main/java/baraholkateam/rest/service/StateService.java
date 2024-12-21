@@ -1,7 +1,7 @@
 package baraholkateam.rest.service;
 
-import baraholkateam.rest.model.CurrentState;
-import baraholkateam.rest.repository.CurrentStateRepository;
+import baraholkateam.rest.model.StateEntity;
+import baraholkateam.rest.repository.StateRepository;
 import baraholkateam.util.Command;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +14,13 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
-public class CurrentStateService {
+public class StateService {
 
     @Autowired
-    private CurrentStateRepository currentStateRepository;
+    private StateRepository stateRepository;
 
     public Command get(Long chatId) {
-        Optional<CurrentState> currentStateRepositoryOptional = currentStateRepository.findById(chatId);
+        Optional<StateEntity> currentStateRepositoryOptional = stateRepository.findById(chatId);
         if (currentStateRepositoryOptional.isPresent()) {
             return currentStateRepositoryOptional.get().getState();
         } else {
@@ -30,7 +30,7 @@ public class CurrentStateService {
     }
 
     public void put(Long chatId, Command command) {
-        currentStateRepository.save(new CurrentState(chatId, command));
+        stateRepository.save(new StateEntity(chatId, command));
     }
 
 }

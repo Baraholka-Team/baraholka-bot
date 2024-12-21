@@ -1,11 +1,14 @@
 package baraholkateam.util;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.io.Serializable;
+
 @Getter
 @AllArgsConstructor
-public enum Tag {
+public enum Tag implements Serializable {
 
     // City
     Moscow("#Москва"),
@@ -46,6 +49,7 @@ public enum Tag {
     MenGoods("#мужское"),
     WomenGoods("#женское");
 
+    @JsonProperty("name")
     private final String name;
 
 }

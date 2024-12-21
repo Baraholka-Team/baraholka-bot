@@ -12,12 +12,12 @@ import lombok.Setter;
 @Embeddable
 @AllArgsConstructor
 @Builder
-public class AdvertisementEntityId {
+public class LastSentMessageEntityId {
 
     @Column(name = "chat_id", nullable = false)
     private Long chatId;
 
-    @Column(name = "message_id", nullable = false)
-    private Long messageId;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
 }

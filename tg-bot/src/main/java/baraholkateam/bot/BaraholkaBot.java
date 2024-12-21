@@ -28,7 +28,7 @@ import baraholkateam.notification.NotificationExecutor;
 import baraholkateam.rest.model.AdvertisementEntity;
 import baraholkateam.rest.service.AdvertisementService;
 import baraholkateam.rest.service.ChosenTagsService;
-import baraholkateam.rest.service.CurrentStateService;
+import baraholkateam.rest.service.StateService;
 import baraholkateam.rest.service.LastSentMessageService;
 import baraholkateam.rest.service.PreviousStateService;
 import baraholkateam.telegram_api_requests.TelegramAPIRequests;
@@ -85,7 +85,6 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
     /**
      * Лимит выдачи объявлений в функции поиска объявлений по тегам.
      */
-    public static final Integer SEARCH_ADVERTISEMENTS_LIMIT = 10;
     private final String botName;
     private final String botToken;
     @Value("${channel.chat_id}")
@@ -95,7 +94,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
     @Autowired
     private AdvertisementService advertisementService;
     @Autowired
-    private CurrentStateService currentStateService;
+    private StateService stateService;
     @Autowired
     private LastSentMessageService lastSentMessageService;
     @Autowired
@@ -184,22 +183,22 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
         //  Случай ввода команды по идентификатору
         Command currentCommandByIdentifier = Command.findCommand(message.getText().replace("/", ""));
         if (currentCommandByIdentifier != null) {
-            currentStateService.put(message.getChatId(), currentCommandByIdentifier);
+            stateService.put(message.getChatId(), currentCommandByIdentifier);
             return false;
         }
 
         // Случай нажатия на кнопку с описанием команды
         Command currentCommandByDescription = Command.findCommandByDescription(message.getText());
         if (currentCommandByDescription != null) {
-            currentStateService.put(message.getChatId(), currentCommandByDescription);
+            stateService.put(message.getChatId(), currentCommandByDescription);
             return false;
         }
 
         // Случай пропуска этапа добавления цены, если не были добавлены соответствующие теги
-        if (currentStateService.get(message.getChatId()) == Command.NewAdvertisement_AddPrice) {
+        if (stateService.get(message.getChatId()) == Command.NewAdvertisement_AddPrice) {
             List<String> tags = advertisementService.getTags(message.getChatId());
             if (!tags.contains(Tag.Sale.getName()) && !tags.contains(Tag.Bargaining.getName())) {
-                currentStateService.put(message.getChatId(), Command.NewAdvertisement_AddContacts);
+                stateService.put(message.getChatId(), Command.NewAdvertisement_AddContacts);
             }
         }
         return false;
@@ -270,7 +269,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
 
         // Случай нажатия на кнопку "Назад"
         if (msg.hasText() && Objects.equals(msg.getText(), Configuration.CommandMessage.BACK_BUTTON)) {
-            Command currentCommand = currentStateService.get(chatId);
+            Command currentCommand = stateService.get(chatId);
             Command backCommand = Command.previousCommand(currentCommand);
             if (backCommand != null) {
                 if (lastSentMessageService.get(chatId).hasReplyMarkup()) {
@@ -279,7 +278,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
                 if (currentCommand == Command.NewAdvertisement_AddSocial) {
                     advertisementService.addContacts(chatId, new ArrayList<>());
                 }
-                currentStateService.put(chatId, backCommand);
+                stateService.put(chatId, backCommand);
                 if (backCommand == Command.NewAdvertisement_AddContacts) {
                     advertisementService.addContacts(chatId, new ArrayList<>());
                 }
@@ -301,27 +300,27 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
         // Случай нажатия на кнопку с описанием команды
         Command commandByDescription = Command.findCommandByDescription(msg.getText());
         if (commandByDescription != null) {
-            currentStateService.put(chatId, commandByDescription);
+            stateService.put(chatId, commandByDescription);
             getRegisteredCommand(commandByDescription.getIdentifier()).processMessage(this, msg, null);
             return;
         }
 
         // Случай удаления всех фотографий по кнопке
         if (msg.hasText() && Objects.equals(msg.getText(), Configuration.CommandMessage.DELETE_ALL_PHOTOS)
-                && currentStateService.get(chatId) == Command.NewAdvertisement_ConfirmPhoto) {
+                && stateService.get(chatId) == Command.NewAdvertisement_ConfirmPhoto) {
             advertisementService.setPhotos(msg.getChatId(), new ArrayList<>());
             sendAnswer(chatId, Configuration.CommandMessage.PHOTOS_DELETE);
-            currentStateService.put(chatId, Command.NewAdvertisement_AddPhotos);
+            stateService.put(chatId, Command.NewAdvertisement_AddPhotos);
             getRegisteredCommand(Command.NewAdvertisement_AddPhotos.getIdentifier()).processMessage(this, msg, null);
             return;
         }
 
         // Случай удаления всех социальных сетей по кнопке
         if (msg.hasText() && Objects.equals(msg.getText(), Configuration.CommandMessage.DELETE_ALL_SOCIALS)
-                && currentStateService.get(chatId) == Command.NewAdvertisement_ConfirmPhone) {
+                && stateService.get(chatId) == Command.NewAdvertisement_ConfirmPhone) {
             advertisementService.addContacts(msg.getChatId(), new ArrayList<>());
             sendAnswer(chatId, Configuration.CommandMessage.SOCIALS_DELETE);
-            currentStateService.put(chatId, Command.NewAdvertisement_ConfirmPhone);
+            stateService.put(chatId, Command.NewAdvertisement_ConfirmPhone);
             getRegisteredCommand(Command.NewAdvertisement_ConfirmPhone.getIdentifier()).processMessage(this, msg, null);
             return;
         }
@@ -331,16 +330,16 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
             addChosenTags(lastSentMessageService.get(chatId));
 
             if (chosenTagsService.get(chatId) != null
-                    && Command.nextCommand(currentStateService.get(msg.getChatId())) == Command.NewAdvertisement_AddPrice) {
+                    && Command.nextCommand(stateService.get(msg.getChatId())) == Command.NewAdvertisement_AddPrice) {
                 List<String> addedTags = advertisementService.getTags(chatId);
                 // Если нужно пропустить добавление цены товара
                 if (!addedTags.contains(Tag.Sale.getName()) && !addedTags.contains(Tag.Bargaining.getName())) {
                     List<String> tags = chosenTagsService.get(chatId).stream()
                             .map(Tag::getName)
                             .toList();
-                    previousStateService.put(chatId, currentStateService.get(msg.getChatId()));
+                    previousStateService.put(chatId, stateService.get(msg.getChatId()));
                     advertisementService.addTags(chatId, tags);
-                    currentStateService.put(msg.getChatId(), Command.NewAdvertisement_AddContacts);
+                    stateService.put(msg.getChatId(), Command.NewAdvertisement_AddContacts);
                     deleteLastMessage(msg.getChatId());
                     sendAnswer(
                             chatId,
@@ -356,8 +355,8 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
             }
 
             if (chosenTagsService.get(chatId) != null
-                    && (currentStateService.get(msg.getChatId()) == Command.NewAdvertisement_AddAdvertisementTypes
-                    || currentStateService.get(msg.getChatId()) == Command.NewAdvertisement_AddCategories)) {
+                    && (stateService.get(msg.getChatId()) == Command.NewAdvertisement_AddAdvertisementTypes
+                    || stateService.get(msg.getChatId()) == Command.NewAdvertisement_AddCategories)) {
                 List<String> tags = chosenTagsService.get(chatId).stream()
                         .map(Tag::getName)
                         .toList();
@@ -366,22 +365,22 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
             }
 
             deleteLastMessage(msg.getChatId());
-            Command nextCommand = Command.nextCommand(currentStateService.get(msg.getChatId()));
-            previousStateService.put(chatId, currentStateService.get(msg.getChatId()));
-            currentStateService.put(chatId, nextCommand);
+            Command nextCommand = Command.nextCommand(stateService.get(msg.getChatId()));
+            previousStateService.put(chatId, stateService.get(msg.getChatId()));
+            stateService.put(chatId, nextCommand);
             getRegisteredCommand(nextCommand.getIdentifier()).processMessage(this, msg, null);
             return;
         }
 
         // Случай обработки текстовой информации от пользователя
-        Command currentCommand = currentStateService.get(chatId);
+        Command currentCommand = stateService.get(chatId);
         if (currentCommand != null) {
             executeNonCommand(msg, chatId, currentCommand);
         }
     }
 
     private boolean newAdvertisementUpdateData(Message msg) {
-        Command command = currentStateService.get(msg.getChatId());
+        Command command = stateService.get(msg.getChatId());
         String text = msg.getText();
         if (command == Command.NewAdvertisement_AddDescription) {
             if (text == null || text.length() > 800) {
@@ -426,7 +425,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
             }
             advertisementService.addContact(msg.getChatId(), text);
             previousStateService.put(msg.getChatId(), Command.NewAdvertisement_AddSocial);
-            currentStateService.put(msg.getChatId(), Command.NewAdvertisement_ConfirmPhone);
+            stateService.put(msg.getChatId(), Command.NewAdvertisement_ConfirmPhone);
             getRegisteredCommand(Command.NewAdvertisement_ConfirmPhone.getIdentifier())
                     .processMessage(this, msg, null);
             return true;
@@ -435,7 +434,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
     }
 
     private boolean addAdvertisementPhotos(Message msg) {
-        Command currentCommand = currentStateService.get(msg.getChatId());
+        Command currentCommand = stateService.get(msg.getChatId());
         if (currentCommand == Command.NewAdvertisement_AddPhotos || currentCommand == Command.NewAdvertisement_ConfirmPhoto) {
 
             AtomicInteger canAddPhotosCount =
@@ -476,7 +475,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
             if (isCanAdd.get()) {
                 getRegisteredCommand(Command.NewAdvertisement_ConfirmPhoto.getIdentifier())
                         .processMessage(this, msg, null);
-                currentStateService.put(msg.getChatId(), Command.NewAdvertisement_ConfirmPhoto);
+                stateService.put(msg.getChatId(), Command.NewAdvertisement_ConfirmPhoto);
             }
             return true;
         }
@@ -484,9 +483,9 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
     }
 
     private void updateStateOnTextData(Message msg) {
-        Command nextCommand = Command.nextCommand(currentStateService.get(msg.getChatId()));
-        previousStateService.put(msg.getChatId(), currentStateService.get(msg.getChatId()));
-        currentStateService.put(msg.getChatId(), nextCommand);
+        Command nextCommand = Command.nextCommand(stateService.get(msg.getChatId()));
+        previousStateService.put(msg.getChatId(), stateService.get(msg.getChatId()));
+        stateService.put(msg.getChatId(), nextCommand);
         getRegisteredCommand(nextCommand.getIdentifier()).processMessage(this, msg, null);
     }
 
@@ -511,9 +510,9 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
             }
             return;
         } else {
-            Command nextCommand = Command.nextCommand(currentStateService.get(msg.getChatId()));
-            previousStateService.put(chatId, currentStateService.get(msg.getChatId()));
-            currentStateService.put(chatId, nextCommand);
+            Command nextCommand = Command.nextCommand(stateService.get(msg.getChatId()));
+            previousStateService.put(chatId, stateService.get(msg.getChatId()));
+            stateService.put(chatId, nextCommand);
         }
         // ошибки в обработке сообщения пользователя нет, отправляем ответ и переходим на следующий шаг
         for (NonCommand.AnswerPair answer : answers) {
@@ -581,7 +580,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
         String[] dataParts = callbackQuery.split(" ");
         switch (dataParts[0]) {
             case Configuration.CommandMessage.TAG_CALLBACK_DATA -> {
-                if (currentStateService.get(msg.getChatId()) == Command.NewAdvertisement_AddCity) {
+                if (stateService.get(msg.getChatId()) == Command.NewAdvertisement_AddCity) {
                     advertisementService.addTag(msg.getChatId(), dataParts[1]);
                 } else {
                     List<Tag> tags = chosenTagsService.get(msg.getChatId());
@@ -602,9 +601,9 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
                 }
 
                 deleteLastMessage(msg.getChatId());
-                Command nextCommand = Command.nextCommand(currentStateService.get(msg.getChatId()));
-                previousStateService.put(msg.getChatId(), currentStateService.get(msg.getChatId()));
-                currentStateService.put(msg.getChatId(), nextCommand);
+                Command nextCommand = Command.nextCommand(stateService.get(msg.getChatId()));
+                previousStateService.put(msg.getChatId(), stateService.get(msg.getChatId()));
+                stateService.put(msg.getChatId(), nextCommand);
                 getRegisteredCommand(nextCommand.getIdentifier()).processMessage(this, msg, null);
             }
             case Configuration.CommandMessage.TAGS_CALLBACK_DATA -> {
@@ -622,11 +621,11 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
             case Configuration.CommandMessage.PHONE_CALLBACK_DATA -> {
                 deleteLastMessage(msg.getChatId());
                 if (Objects.equals(dataParts[1], "yes")) {
-                    currentStateService.put(msg.getChatId(), Command.NewAdvertisement_AddPhone);
+                    stateService.put(msg.getChatId(), Command.NewAdvertisement_AddPhone);
                     getRegisteredCommand(Command.NewAdvertisement_AddPhone.getIdentifier())
                             .processMessage(this, msg, null);
                 } else if (Objects.equals(dataParts[1], "no")) {
-                    currentStateService.put(msg.getChatId(), Command.NewAdvertisement_ConfirmPhone);
+                    stateService.put(msg.getChatId(), Command.NewAdvertisement_ConfirmPhone);
                     getRegisteredCommand(Command.NewAdvertisement_ConfirmPhone.getIdentifier())
                             .processMessage(this, msg, null);
                 }
@@ -634,11 +633,11 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
             case Configuration.CommandMessage.SOCIAL_CALLBACK_DATA -> {
                 deleteLastMessage(msg.getChatId());
                 if (Objects.equals(dataParts[1], "yes")) {
-                    currentStateService.put(msg.getChatId(), Command.NewAdvertisement_AddSocial);
+                    stateService.put(msg.getChatId(), Command.NewAdvertisement_AddSocial);
                     getRegisteredCommand(Command.NewAdvertisement_AddSocial.getIdentifier())
                             .processMessage(this, msg, null);
                 } else if (Objects.equals(dataParts[1], "no")) {
-                    currentStateService.put(msg.getChatId(), Command.NewAdvertisement_Confirm);
+                    stateService.put(msg.getChatId(), Command.NewAdvertisement_Confirm);
                     getRegisteredCommand(Command.NewAdvertisement_Confirm.getIdentifier())
                             .processMessage(this, msg, null);
                 }
@@ -684,7 +683,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
                                 )
                                 .setUpdateAttempt(0);
                         advertisementService.put(currentAdvertisementEntity);
-                        advertisementService.insertNewAdvertisement(currentAdvertisementEntity);
+                        advertisementService.saveNewAdvertisement(currentAdvertisementEntity);
                         sendAnswer(msg.getChatId(), Configuration.CommandMessage.SUCCESS_TEXT);
                     } else {
                         sendAnswer(msg.getChatId(), Configuration.CommandMessage.UNSUCCESS_TEXT);
@@ -693,7 +692,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
                 } else if (Objects.equals(dataParts[1], "no")) {
                     sendAnswer(msg.getChatId(), Configuration.CommandMessage.ADVERTISEMENT_CANCELLED_TEXT);
                 }
-                currentStateService.put(msg.getChatId(), Command.MainMenu);
+                stateService.put(msg.getChatId(), Command.MainMenu);
                 getRegisteredCommand(Command.MainMenu.getIdentifier())
                         .processMessage(this, msg, null);
             }
@@ -728,7 +727,7 @@ public class BaraholkaBot extends TelegramLongPollingCommandBot implements FileL
                     sendAnswer(msg.getChatId(), Configuration.CommandMessage.SUCCESS_DELETE_AD_TEXT);
                 } else {
                     sendAnswer(msg.getChatId(), Configuration.CommandMessage.UNSUCCESS_DELETE_AD_TEXT);
-                    currentStateService.put(msg.getChatId(), Command.DeleteAdvertisement);
+                    stateService.put(msg.getChatId(), Command.DeleteAdvertisement);
                     getRegisteredCommand(Command.DeleteAdvertisement.getIdentifier())
                             .processMessage(this, msg, null);
                 }

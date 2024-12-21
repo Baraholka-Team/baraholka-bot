@@ -30,7 +30,7 @@ public class DeleteAdvertisementCommand extends BaraholkaBotCommand {
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] arguments) {
         long chatId = chat.getId();
-        List<AdvertisementEntity> ads = advertisementService.getByChatId(chatId);
+        List<AdvertisementEntity> ads = advertisementService.getUserAdvertisements(chatId);
 
         if (ads == null || ads.isEmpty()) {
             sendAnswer(absSender, user, chat, Configuration.CommandMessage.NO_ADS_TO_DELETE);
@@ -48,11 +48,11 @@ public class DeleteAdvertisementCommand extends BaraholkaBotCommand {
             AdvertisementDTO advertisementDTO = AdvertisementMapper.getAdvertisementDTO(advertisement);
             InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
             String description = advertisementDTO.getAdvertisementText();
-            int descIndex = description.indexOf(Configuration.Advertisement.DESCRIPTION_TEXT);
+            int descIndex = description.indexOf(Configuration.AdvertisementDescriptionParts.DESCRIPTION_TEXT);
             inlineKeyboardButton.setText(
                     description
-                            .substring(descIndex + Configuration.Advertisement.DESCRIPTION_TEXT.length(),
-                                    descIndex + Configuration.Advertisement.DESCRIPTION_TEXT.length() + 40)
+                            .substring(descIndex + Configuration.AdvertisementDescriptionParts.DESCRIPTION_TEXT.length(),
+                                    descIndex + Configuration.AdvertisementDescriptionParts.DESCRIPTION_TEXT.length() + 40)
                             .concat("...")
             );
             inlineKeyboardButton.setCallbackData(String.format("%s %d", Configuration.CommandMessage.DELETE_CALLBACK_TEXT, advertisementDTO.getMessageId()));

@@ -1,6 +1,6 @@
 package baraholkateam.rest.service;
 
-import baraholkateam.rest.model.LastSentMessage;
+import baraholkateam.rest.model.LastSentMessageEntity;
 import baraholkateam.rest.repository.LastSentMessageRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ public class LastSentMessageService {
     private LastSentMessageRepository lastSentMessageRepository;
 
     public Message get(Long chatId) {
-        Optional<LastSentMessage> lastSentMessageOptional = lastSentMessageRepository.findById(chatId);
+        Optional<LastSentMessageEntity> lastSentMessageOptional = lastSentMessageRepository.findById(chatId);
         if (lastSentMessageOptional.isPresent()) {
             return lastSentMessageOptional.get().getMessage();
         } else {
@@ -30,7 +30,7 @@ public class LastSentMessageService {
     }
 
     public void put(Long chatId, Message message) {
-        lastSentMessageRepository.save(new LastSentMessage(chatId, message));
+        lastSentMessageRepository.save(new LastSentMessageEntity(chatId, message));
     }
 
 }

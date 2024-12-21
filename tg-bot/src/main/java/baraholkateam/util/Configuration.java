@@ -46,7 +46,7 @@ public final class Configuration {
             Невозможно выполнить текущую команду.
             Пожалуйста, вернитесь в главное меню /%s и попробуйте снова.""";
         String NO_HASHTAGS = "➖";
-        String UNKNOWN_COMMAND = "Введённая команда не известна боту. Справка со всеми командами: /%s".formatted(Command.Help.getIdentifier());
+        String UNKNOWN_COMMAND = "Введённая команда не известна боту. Справка со всеми командами: /%s".formatted(Command.Help.getName());
         String NOT_ACTUAL_TEXT = "<b>НЕАКТУАЛЬНО</b>";
         String USER_ACTUAL_ADS_TEXT = """
             Здесь представлены краткие описания Ваших актуальных объявлений.
@@ -152,12 +152,18 @@ public final class Configuration {
         String CANNOT_FORWARD_MESSAGE = "Невозможно переслать объявление из канала.";
     }
 
-    public interface Advertisement {
+    public interface AdvertisementDescriptionParts {
         String DESCRIPTION_TEXT = "Описание: ";
         String PRICE_TEXT = "Цена: %s руб.";
         String PHONE_NUMBER = "Номер телефона: <span class=\"tg-spoiler\">%s</span>";
         String CONTACTS = "Контакты: ";
         String CONTACT = "<span class=\"tg-spoiler\">%s</span>";
+    }
+
+    public interface ExceptionMessage {
+        String NO_NEXT_COMMAND = "Для команды '%s' не было найдено следующей команды для перехода.";
+        String NO_PREVIOUS_COMMAND = "Для команды '%s' не было найдено предыдущей команды для перехода.";
+        String NO_COMMAND_WITH_NAME = "Команды '%s' не существует.";
     }
 
 }

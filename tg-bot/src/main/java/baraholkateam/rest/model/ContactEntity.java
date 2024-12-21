@@ -25,14 +25,14 @@ import lombok.Setter;
 public class ContactEntity {
 
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long contactId;
 
     @ManyToOne
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "id", nullable = false)
     private ContactTypeEntity contactType;
 
-    @Column(name = "name")
+    @Column(name = "name", length = 64, nullable = false)
     private String contactName;
 
     @ManyToOne

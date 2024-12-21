@@ -1,11 +1,14 @@
 package baraholkateam.util;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.Map;
-import java.util.Objects;
+import java.io.Serializable;
 
-public enum Command {
+@Getter
+@AllArgsConstructor
+public enum Command implements Serializable {
     Start("start", "Старт"),
     Help("help", "Справочная информация по боту"),
     MainMenu("menu", "Главное меню"),
@@ -33,99 +36,9 @@ public enum Command {
     SearchAdvertisements_ShowFoundAdvertisements("show_found_advertisements",
             "Вывод найденных объявлений");
 
-    @Getter
-    private final String identifier;
-    @Getter
+    @JsonProperty("name")
+    private final String name;
+    @JsonProperty("description") // TODO убрать description в базу
     private final String description;
-    private static final Map<Command, Command> NEXT_COMMAND = getNextCommand();
-    private static final Map<Command, Command> PREVIOUS_COMMAND = getPreviousCommand();
-
-    Command(String identifier, String description) {
-        this.identifier = identifier;
-        this.description = description;
-    }
-
-    private static Map<Command, Command> getNextCommand() {
-        return Map.ofEntries(
-                Map.entry(SearchAdvertisements, SearchAdvertisements_AddAdvertisementTypes),
-                Map.entry(SearchAdvertisements_AddAdvertisementTypes, SearchAdvertisements_AddProductCategories),
-                Map.entry(SearchAdvertisements_AddProductCategories, SearchAdvertisements_ShowFoundAdvertisements),
-                Map.entry(NewAdvertisement, NewAdvertisement_AddPhotos),
-                Map.entry(NewAdvertisement_AddPhotos, NewAdvertisement_ConfirmPhoto),
-                Map.entry(NewAdvertisement_ConfirmPhoto, NewAdvertisement_AddDescription),
-                Map.entry(NewAdvertisement_AddDescription, NewAdvertisement_AddCity),
-                Map.entry(NewAdvertisement_AddCity, NewAdvertisement_AddAdvertisementTypes),
-                Map.entry(NewAdvertisement_AddAdvertisementTypes, NewAdvertisement_AddCategories),
-                Map.entry(NewAdvertisement_AddCategories, NewAdvertisement_AddPrice),
-                Map.entry(NewAdvertisement_AddPrice, NewAdvertisement_ConfirmPrice),
-                Map.entry(NewAdvertisement_ConfirmPrice, NewAdvertisement_AddContacts),
-                Map.entry(NewAdvertisement_AddContacts, NewAdvertisement_AddPhone),
-                Map.entry(NewAdvertisement_AddPhone, NewAdvertisement_ConfirmPhone),
-                Map.entry(NewAdvertisement_ConfirmPhone, NewAdvertisement_AddSocial),
-                Map.entry(NewAdvertisement_AddSocial, NewAdvertisement_Confirm)
-        );
-    }
-
-    private static Map<Command, Command> getPreviousCommand() {
-        return Map.ofEntries(
-                Map.entry(Start, Start),
-                Map.entry(Help, MainMenu),
-                Map.entry(MainMenu, MainMenu),
-                Map.entry(UserAdvertisements, MainMenu),
-                Map.entry(NewAdvertisement, MainMenu),
-                Map.entry(DeleteAdvertisement, MainMenu),
-                Map.entry(NewAdvertisement_AddPhotos, NewAdvertisement),
-                Map.entry(NewAdvertisement_ConfirmPhoto, NewAdvertisement_AddPhotos),
-                Map.entry(NewAdvertisement_AddDescription, NewAdvertisement_AddPhotos),
-                Map.entry(NewAdvertisement_AddCity, NewAdvertisement_AddDescription),
-                Map.entry(NewAdvertisement_AddAdvertisementTypes, NewAdvertisement_AddCity),
-                Map.entry(NewAdvertisement_AddCategories, NewAdvertisement_AddCity),
-                Map.entry(NewAdvertisement_AddPrice, NewAdvertisement_AddCity),
-                Map.entry(NewAdvertisement_ConfirmPrice, NewAdvertisement_AddPrice),
-                Map.entry(NewAdvertisement_AddContacts, NewAdvertisement_AddPrice),
-                Map.entry(NewAdvertisement_AddPhone, NewAdvertisement_AddContacts),
-                Map.entry(NewAdvertisement_ConfirmPhone, NewAdvertisement_AddContacts),
-                Map.entry(NewAdvertisement_AddSocial, NewAdvertisement_AddContacts),
-                Map.entry(NewAdvertisement_Confirm, NewAdvertisement_AddContacts),
-                Map.entry(SearchAdvertisements, MainMenu),
-                Map.entry(SearchAdvertisements_AddAdvertisementTypes, SearchAdvertisements),
-                Map.entry(SearchAdvertisements_AddProductCategories, SearchAdvertisements_AddAdvertisementTypes),
-                Map.entry(SearchAdvertisements_ShowFoundAdvertisements, SearchAdvertisements_AddProductCategories)
-        );
-    }
-
-    public static Command findCommand(String text) {
-        for (Command command : Command.values()) {
-            if (Objects.equals(command.getIdentifier(), text)) {
-                return command;
-            }
-        }
-        return null;
-    }
-
-    public static Command findCommandByDescription(String text) {
-        for (Command command : Command.values()) {
-            if (Objects.equals(command.getDescription(), text)) {
-                return command;
-            }
-        }
-        return null;
-    }
-
-    public static Command nextCommand(Command currentCommand) {
-        if (currentCommand == null) {
-            return null;
-        }
-        Command nextCommand = NEXT_COMMAND.get(currentCommand);
-        return nextCommand == null ? currentCommand : nextCommand;
-    }
-
-    public static Command previousCommand(Command currentCommand) {
-        if (currentCommand == null) {
-            return null;
-        }
-        Command previousCommand = PREVIOUS_COMMAND.get(currentCommand);
-        return previousCommand == null ? currentCommand : previousCommand;
-    }
 
 }

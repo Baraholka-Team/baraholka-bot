@@ -12,7 +12,7 @@ import lombok.Setter;
 @Embeddable
 @AllArgsConstructor
 @Builder
-public class AdvertisementEntityId {
+public class StateEntityId {
 
     @Column(name = "chat_id", nullable = false)
     private Long chatId;

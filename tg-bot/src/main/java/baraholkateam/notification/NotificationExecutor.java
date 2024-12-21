@@ -78,7 +78,7 @@ public class NotificationExecutor {
     @Scheduled(initialDelayString = "${notificator.initial-delay-in-milliseconds}",
             fixedRateString = "${notificator.fixed-rate-in-milliseconds}")
     private void startNotificationExecutor() {
-        List<AdvertisementEntity> advertisementEntities = advertisementService.askActualAdvertisements(System.currentTimeMillis());
+        List<AdvertisementEntity> advertisementEntities = advertisementService.getMarkedForDeleteAdvertisements(System.currentTimeMillis());
         for (AdvertisementEntity advertisementEntity : advertisementEntities) {
             int attemptNum = advertisementEntity.getUpdateAttempt();
             long chatId = advertisementEntity.getOwnerChatId();

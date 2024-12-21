@@ -2,7 +2,6 @@ package baraholkateam.rest.controller;
 
 import baraholkateam.rest.model.AdvertisementEntity;
 import baraholkateam.rest.service.AdvertisementService;
-import baraholkateam.util.AllTags;
 import baraholkateam.util.TelegramUserInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +44,7 @@ public class BaraholkaBotRestController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
-        List<AdvertisementEntity> advertisementEntities = advertisementService.getByChatId(userId);
+        List<AdvertisementEntity> advertisementEntities = advertisementService.getUserAdvertisements(userId);
 
         return new ResponseEntity<>(advertisementEntities, HttpStatus.OK);
     }
@@ -128,7 +127,7 @@ public class BaraholkaBotRestController {
 
         String[] allTags = tagsList.toArray(String[]::new);
 
-        List<AdvertisementEntity> advertisementEntities = advertisementService.tagsSearch(allTags);
+        List<AdvertisementEntity> advertisementEntities = advertisementService.searchAdvertisementsWithTags(allTags);
 
         return new ResponseEntity<>(advertisementEntities, HttpStatus.OK);
     }

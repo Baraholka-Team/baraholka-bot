@@ -14,25 +14,31 @@ import lombok.Setter;
 import java.util.List;
 
 /**
- * Тип контакта пользователя для объявления
+ * Команда в боте
  */
 @Getter
 @Setter
-@Entity(name = "contact_type")
-@Table(name = "contact_type")
+@Entity(name = "command")
+@Table(name = "command")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ContactTypeEntity {
+public class CommandEntity {
 
     @Id
     @Column(name = "id", nullable = false)
-    private Long contactTypeId;
+    private Long commandId;
 
     @Column(name = "name", length = 64, nullable = false)
-    private String contactTypeName;
+    private String name;
 
-    @OneToMany(mappedBy = "contactType")
-    private List<ContactEntity> contacts;
+    @Column(name = "description", length = 256, nullable = false)
+    private String description;
+
+    @OneToMany(mappedBy = "currentCommand")
+    private List<StateEntity> currentStates;
+
+    @OneToMany(mappedBy = "previousCommand")
+    private List<StateEntity> previousStates;
 
 }

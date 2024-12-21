@@ -26,10 +26,10 @@ import java.util.List;
 public class TagTypeEntity {
 
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long tagTypeId;
 
-    @Column(name = "name")
+    @Column(name = "name", length = 64, nullable = false)
     private String tagTypeName;
 
     @OneToMany(mappedBy = "tagType")

@@ -33,6 +33,9 @@ public class AdvertisementEntity {
     @EmbeddedId
     private AdvertisementEntityId advertisementEntityId;
 
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
     @OneToMany(mappedBy = "advertisement", fetch = FetchType.EAGER)
     private List<PhotoEntity> photos;
 
@@ -42,7 +45,7 @@ public class AdvertisementEntity {
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "advertisement_tag",
-            joinColumns = { @JoinColumn(name = "advertisement_message_id"), @JoinColumn(name = "advertisement_owner_chat_id") },
+            joinColumns = { @JoinColumn(name = "advertisement_chat_id"), @JoinColumn(name = "advertisement_message_id") },
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<TagEntity> tags;
 

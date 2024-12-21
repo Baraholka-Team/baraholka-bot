@@ -10,6 +10,9 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
+/**
+ * Бизнес сущность типов тегов для пользователя
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,7 +22,6 @@ public class TagTypeDTO implements Serializable {
 
     @JsonProperty("tagTypeId")
     private Long tagTypeId;
-
     @JsonProperty("tagTypeName")
     private TagType tagTypeName;
 

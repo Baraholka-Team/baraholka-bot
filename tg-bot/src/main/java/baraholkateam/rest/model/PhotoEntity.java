@@ -7,8 +7,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+/**
+ * Фото товара из объявления пользователя
+ */
 @Getter
 @Setter
 @Entity(name = "photo")
@@ -19,11 +26,11 @@ import lombok.*;
 public class PhotoEntity {
 
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long photoId;
 
     @Lob
-    @Column(name = "photo", length = Integer.MAX_VALUE)
+    @Column(name = "photo", length = Integer.MAX_VALUE, nullable = false)
     private String photo;
 
     @ManyToOne

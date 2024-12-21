@@ -196,7 +196,7 @@ public class BaraholkaBotRestControllerHelper {
                     )
                     .setUpdateAttempt(0);
             advertisementService.put(advertisementEntity);
-            advertisementService.insertNewAdvertisement(advertisementEntity);
+            advertisementService.saveNewAdvertisement(advertisementEntity);
 
             return true;
         }
