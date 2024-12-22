@@ -2,6 +2,8 @@ package baraholkateam.rest.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -26,10 +28,11 @@ import java.util.List;
 public class ContactTypeEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "contact_type_sequence")
     @Column(name = "id", nullable = false)
     private Long contactTypeId;
 
-    @Column(name = "name", length = 64, nullable = false)
+    @Column(name = "name", unique = true, length = 64, nullable = false)
     private String contactTypeName;
 
     @OneToMany(mappedBy = "contactType")

@@ -32,15 +32,15 @@ public class AdvertisementDTO implements Serializable {
     @JsonProperty("user_id")
     private Long userId;
     @JsonProperty("photos")
-    private List<PhotoDTO> photos;
+    private List<PhotoDTO> photos = new ArrayList<>();
     @JsonProperty("description")
     private String description;
     @JsonProperty("tags")
-    private List<TagDTO> tags;
+    private List<TagDTO> tags = new ArrayList<>();
     @JsonProperty("price")
     private Long price;
     @JsonProperty("contacts")
-    private List<ContactDTO> contacts;
+    private List<ContactDTO> contacts = new ArrayList<>();
     @JsonIgnore
     private Long creationTime;
     @JsonIgnore

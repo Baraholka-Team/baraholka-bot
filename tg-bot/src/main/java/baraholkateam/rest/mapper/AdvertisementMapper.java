@@ -12,6 +12,9 @@ import baraholkateam.rest.model.TagEntity;
 
 import java.util.List;
 
+/**
+ * Маппер бизнес сущности объявления и JPA сущности
+ */
 public class AdvertisementMapper {
 
     public static AdvertisementEntity getAdvertisementEntity(AdvertisementDTO advertisementDTO) {

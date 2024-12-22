@@ -5,6 +5,9 @@ import baraholkateam.rest.model.LastSentMessageEntity;
 import baraholkateam.rest.model.LastSentMessageEntityId;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
+/**
+ * Маппер бизнес сущности последнего отправленного ботом сообщения и JPA сущности
+ */
 public class LastSentMessageMapper {
 
     public static LastSentMessageEntity getLastSentMessageEntity(LastSentMessageDTO lastSentMessageDTO) {

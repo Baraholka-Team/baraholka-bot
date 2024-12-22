@@ -9,6 +9,9 @@ import baraholkateam.util.TagType;
 
 import java.util.List;
 
+/**
+ * Маппер бизнес сущности тегов и JPA сущности
+ */
 public class TagMapper {
 
     public static TagEntity getTagEntity(TagDTO tagDTO) {
@@ -20,7 +23,7 @@ public class TagMapper {
         return TagEntity.builder()
                 .tagId(tagDTO.getTagId())
                 .tagType(tagTypeEntity)
-                .tag(tagDTO.getTag().getName())
+                .name(tagDTO.getTag().getName())
                 .build();
     }
 
@@ -33,7 +36,7 @@ public class TagMapper {
         return TagDTO.builder()
                 .tagId(tagEntity.getTagId())
                 .tagType(tagTypeDTO)
-                .tag(Tag.valueOf(tagEntity.getTag()))
+                .tag(Tag.valueOf(tagEntity.getName()))
                 .build();
     }
 

@@ -164,6 +164,7 @@ public final class Configuration {
         String NO_NEXT_COMMAND = "Для команды '%s' не было найдено следующей команды для перехода.";
         String NO_PREVIOUS_COMMAND = "Для команды '%s' не было найдено предыдущей команды для перехода.";
         String NO_COMMAND_WITH_NAME = "Команды '%s' не существует.";
+        String NO_PREVIOUS_STATE_FOUND = "Для состояния бота '%s' не было найдено предыдущей состояния.";
     }
 
 }

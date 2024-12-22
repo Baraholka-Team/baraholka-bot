@@ -2,6 +2,8 @@ package baraholkateam.rest.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -26,13 +28,14 @@ import java.util.List;
 public class CommandEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "command_sequence")
     @Column(name = "id", nullable = false)
     private Long commandId;
 
-    @Column(name = "name", length = 64, nullable = false)
+    @Column(name = "name", unique = true, length = 64, nullable = false)
     private String name;
 
-    @Column(name = "description", length = 256, nullable = false)
+    @Column(name = "description", unique = true, length = 256, nullable = false)
     private String description;
 
     @OneToMany(mappedBy = "currentCommand")

@@ -4,6 +4,9 @@ import baraholkateam.exception.BaraholkaBotException;
 import baraholkateam.rest.dto.CommandDTO;
 import baraholkateam.rest.model.CommandEntity;
 
+/**
+ * Маппер бизнес сущности команды пользователя и JPA сущности
+ */
 public class CommandMapper {
 
     public static CommandEntity getCommandEntity(CommandDTO commandDTO) {

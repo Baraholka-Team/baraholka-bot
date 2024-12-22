@@ -5,6 +5,9 @@ import baraholkateam.rest.model.PhotoEntity;
 
 import java.util.List;
 
+/**
+ * Маппер бизнес сущности фотографии из объявления пользователя и JPA сущности
+ */
 public class PhotoMapper {
     
     public static PhotoEntity getPhotoEntity(PhotoDTO photoDTO) {

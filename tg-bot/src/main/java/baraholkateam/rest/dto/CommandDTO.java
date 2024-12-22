@@ -85,7 +85,7 @@ public class CommandDTO implements Serializable {
      * Возвращает следующую команду
      * @param currentCommand текущая команда
      * @return следующую команду, если такая команда существует, иначе бросает {@link BaraholkaBotException}
-     * @throws BaraholkaBotException, если следующей команды не существует
+     * @throws BaraholkaBotException если следующей команды не существует
      */
     public static Command nextCommand(Command currentCommand) throws BaraholkaBotException {
         Command nextCommand = NEXT_COMMAND_MAP.get(currentCommand);
@@ -100,7 +100,7 @@ public class CommandDTO implements Serializable {
      * Возвращает предыдущую команду
      * @param currentCommand текущая команда
      * @return предыдущую команду, если такая команда существует, иначе бросает {@link BaraholkaBotException}
-     * @throws BaraholkaBotException, если предыдущей команды не существует
+     * @throws BaraholkaBotException если предыдущей команды не существует
      */
     public static Command previousCommand(Command currentCommand) throws BaraholkaBotException {
         Command previousCommand = PREVIOUS_COMMAND_MAP.get(currentCommand);
@@ -115,7 +115,7 @@ public class CommandDTO implements Serializable {
      * Возвращает команду по её названию
      * @param name название команды
      * @return команду, если такая команда существует, иначе бросает {@link BaraholkaBotException}
-     * @throws BaraholkaBotException, если команды с переданным названием не существует
+     * @throws BaraholkaBotException если команды с переданным названием не существует
      */
     public static Command findCommand(String name) throws BaraholkaBotException {
         for (Command command : Command.values()) {

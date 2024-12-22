@@ -11,7 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import java.io.Serializable;
 
 /**
- * Бизнес сущность последнего отправленного сообщения ботом пользователю
+ * Бизнес сущность последнего отправленного ботом сообщения
  */
 @Getter
 @Setter

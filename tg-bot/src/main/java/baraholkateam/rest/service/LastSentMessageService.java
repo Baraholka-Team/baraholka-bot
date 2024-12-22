@@ -1,36 +1,49 @@
 package baraholkateam.rest.service;
 
-import baraholkateam.rest.model.LastSentMessageEntity;
+import baraholkateam.rest.dto.LastSentMessageDTO;
+import baraholkateam.rest.mapper.LastSentMessageMapper;
+import baraholkateam.rest.model.LastSentMessageEntityId;
 import baraholkateam.rest.repository.LastSentMessageRepository;
-import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.objects.Message;
-
-import java.util.Optional;
 
 /**
- * Сервис взаимодействия с сущностью "LastSentMessage".
+ * Сервис для работы с последним сообщением, отправленным ботом пользователю
  */
-@Slf4j
 @Service
 public class LastSentMessageService {
 
     @Autowired
     private LastSentMessageRepository lastSentMessageRepository;
 
-    public Message get(Long chatId) {
-        Optional<LastSentMessageEntity> lastSentMessageOptional = lastSentMessageRepository.findById(chatId);
-        if (lastSentMessageOptional.isPresent()) {
-            return lastSentMessageOptional.get().getMessage();
-        } else {
-            log.error("Last sent message for chat {} not found!", chatId);
-            return null;
-        }
+    /**
+     * Получает последнее сообщение, отправленное ботом пользователю
+     * @param chatId id чата
+     * @param userId id пользователя
+     * @return последнее отправленное ботом сообщение или null, если такого сообщения не существует
+     */
+    public LastSentMessageDTO getLastSentMessage(@NotNull Long chatId, @NotNull Long userId) {
+        return lastSentMessageRepository.findById(new LastSentMessageEntityId(chatId, userId))
+                .map(LastSentMessageMapper::getLastSentMessageDTO)
+                .orElse(null);
     }
 
-    public void put(Long chatId, Message message) {
-        lastSentMessageRepository.save(new LastSentMessageEntity(chatId, message));
+    /**
+     * Сохраняет последнее сообщение, отправленное ботом пользователю
+     * @param lastSentMessageDTO сообщение
+     */
+    public void addLastSentMessage(@NotNull LastSentMessageDTO lastSentMessageDTO) {
+        lastSentMessageRepository.save(LastSentMessageMapper.getLastSentMessageEntity(lastSentMessageDTO));
+    }
+
+    /**
+     * Удаляет последнее сообщение, отправленное ботом пользователю
+     * @param chatId id чата
+     * @param userId id пользователя
+     */
+    public void deleteLastSentMessage(@NotNull Long chatId, @NotNull Long userId) {
+        lastSentMessageRepository.deleteById(new LastSentMessageEntityId(chatId, userId));
     }
 
 }

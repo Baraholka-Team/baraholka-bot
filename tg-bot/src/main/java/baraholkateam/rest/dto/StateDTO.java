@@ -21,8 +21,8 @@ public class StateDTO implements Serializable {
 
     @JsonProperty("chat_id")
     private Long chatId;
-    @JsonProperty("message_id")
-    private Long messageId;
+    @JsonProperty("user_id")
+    private Long userId;
     @JsonProperty("current_command")
     private CommandDTO currentCommand;
     @JsonProperty("previous_command")

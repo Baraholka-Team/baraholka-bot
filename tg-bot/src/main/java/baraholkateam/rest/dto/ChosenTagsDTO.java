@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +26,14 @@ public class ChosenTagsDTO implements Serializable {
     @JsonProperty("message_id")
     private Long messageId;
     @JsonProperty("tags")
-    private List<TagDTO> tags;
+    private List<TagDTO> tags = new ArrayList<>();
+
+    public void addTag(TagDTO tag) {
+        this.tags.add(tag);
+    }
+
+    public void addTags(List<TagDTO> tags) {
+        this.tags.addAll(tags);
+    }
 
 }

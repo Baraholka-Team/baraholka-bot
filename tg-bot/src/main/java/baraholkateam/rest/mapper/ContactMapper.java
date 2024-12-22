@@ -8,6 +8,9 @@ import baraholkateam.util.ContactType;
 
 import java.util.List;
 
+/**
+ * Маппер бизнес сущности контактов пользователя из объявления и JPA сущности
+ */
 public class ContactMapper {
 
     public static ContactEntity getContactEntity(ContactDTO contactDTO) {

@@ -1,36 +1,84 @@
 package baraholkateam.rest.service;
 
+import baraholkateam.exception.BaraholkaBotException;
+import baraholkateam.rest.dto.CommandDTO;
+import baraholkateam.rest.dto.StateDTO;
+import baraholkateam.rest.mapper.StateMapper;
 import baraholkateam.rest.model.StateEntity;
+import baraholkateam.rest.model.StateEntityId;
 import baraholkateam.rest.repository.StateRepository;
-import baraholkateam.util.Command;
-import lombok.extern.slf4j.Slf4j;
+import baraholkateam.util.Configuration;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 /**
- * Сервис взаимодействия с сущностью "CurrentState".
+ * Сервис для работы с состояниями бота
  */
-@Slf4j
 @Service
 public class StateService {
 
     @Autowired
     private StateRepository stateRepository;
 
-    public Command get(Long chatId) {
-        Optional<StateEntity> currentStateRepositoryOptional = stateRepository.findById(chatId);
-        if (currentStateRepositoryOptional.isPresent()) {
-            return currentStateRepositoryOptional.get().getState();
-        } else {
-            log.error("Current state for chat {} not found!", chatId);
-            return null;
+    /**
+     * Получает состояние бота
+     * @param chatId id чата
+     * @param userId id пользователя
+     * @return состояние бота
+     * @throws BaraholkaBotException если невозможно получить состояние бота
+     */
+    public StateDTO getState(@NotNull Long chatId, @NotNull Long userId) throws BaraholkaBotException {
+        Optional<StateEntity> stateEntityOptional = stateRepository.findById(new StateEntityId(chatId, userId));
+        return stateEntityOptional.isPresent()
+                ? StateMapper.getStateDTO(stateEntityOptional.get())
+                : null;
+    }
+
+    /**
+     * Сохраняет состояние бота
+     * @param stateDTO состояние бота для сохранения
+     */
+    public void addState(@NotNull StateDTO stateDTO) {
+        stateRepository.save(StateMapper.getStateEntity(stateDTO));
+    }
+
+    /**
+     * Заменяет текущее состояние бота
+     * @param chatId id чата
+     * @param userId id пользователя
+     * @param currentCommandDTO текущая команда пользователя
+     * @throws BaraholkaBotException если невозможно получить состояние бота или состояние не корректное
+     */
+    public void changeCurrentState(@NotNull Long chatId,
+                                   @NotNull Long userId,
+                                   @NotNull CommandDTO currentCommandDTO) throws BaraholkaBotException {
+        Optional<StateEntity> stateEntityOptional = stateRepository.findById(new StateEntityId(chatId, userId));
+        if (stateEntityOptional.isPresent()) {
+            StateDTO stateDTO = StateMapper.getStateDTO(stateEntityOptional.get());
+            if (stateDTO.getPreviousCommand() != null) {
+                stateDTO.setPreviousCommand(stateDTO.getCurrentCommand());
+            } else {
+                throw new BaraholkaBotException(
+                        Configuration.ExceptionMessage.NO_PREVIOUS_STATE_FOUND.formatted(
+                                stateDTO.getCurrentCommand().getCommand().getName()
+                        )
+                );
+            }
+            stateDTO.setCurrentCommand(currentCommandDTO);
+            stateRepository.save(StateMapper.getStateEntity(stateDTO));
         }
     }
 
-    public void put(Long chatId, Command command) {
-        stateRepository.save(new StateEntity(chatId, command));
+    /**
+     * Удаляет состояние бота по id
+     * @param chatId id чата
+     * @param userId id пользователя
+     */
+    public void deleteCurrentState(@NotNull Long chatId, @NotNull Long userId) {
+        stateRepository.deleteById(new StateEntityId(chatId, userId));
     }
 
 }

@@ -8,6 +8,9 @@ import baraholkateam.rest.model.TagEntity;
 
 import java.util.List;
 
+/**
+ * Маппер бизнес сущности выбранных пользователем тегов при поиске объявлений по тегам и JPA сущности
+ */
 public class ChosenTagsMapper {
 
     public static ChosenTagsEntity getChosenTagsEntity(ChosenTagsDTO chosenTagsDTO) {

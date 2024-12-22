@@ -31,7 +31,7 @@ public class AdvertisementService {
      * @param messageId id сообщения в рамках чата
      * @return объявление пользователя или null, если объявление не найдено
      */
-    public AdvertisementDTO get(@NotNull Long chatId, @NotNull Long messageId) {
+    public AdvertisementDTO getAdvertisement(@NotNull Long chatId, @NotNull Long messageId) {
         return advertisementRepository.findById(new AdvertisementEntityId(chatId, messageId))
                 .map(AdvertisementMapper::getAdvertisementDTO)
                 .orElse(null);
@@ -41,7 +41,7 @@ public class AdvertisementService {
      * Получает все объявления пользователя из чата
      * @param chatId id чата
      * @param userId id пользователя
-     * @return объявление пользователя или null, если объявление не найдено
+     * @return все объявления пользователя
      */
     public List<AdvertisementDTO> getUserAdvertisements(@NotNull Long chatId, @NotNull Long userId) {
         return advertisementRepository.findAllByChatIdAndUserId(chatId, userId).stream()
