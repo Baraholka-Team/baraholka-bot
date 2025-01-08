@@ -3,8 +3,7 @@ package baraholkateam.util;
 public final class Configuration {
 
     public interface CommandMessage {
-        String BACK_BUTTON = "Назад";
-        String NEXT_BUTTON_TEXT = "Продолжить";
+        String EMPTY_STRING = "";
         String NOT_CHOSEN_TAG = "➖ %s";
         String TAG_CALLBACK_DATA = "tag";
         String TAGS_CALLBACK_DATA = "tags";
@@ -38,8 +37,9 @@ public final class Configuration {
                 + "[иеё]зд.*?|(за)?п[ие]д[аое]?р(ну.*?|[оа]м|(ас)?(и(ли)?[нщктл]ь?)?|(о(ч[еи])?|ас)?к(ой)|юг)[ауеы]?"
                 + "|манд([ауеыи](л(и[сзщ])?[ауеиы])?|ой|[ао]вошь?(е?к[ауе])?|юк(ов|[ауи])?)|муд([яаио].*?|е?н([ьюия]|ей))"
                 + "|мля([тд]ь)?|лять|([нз]а|по)х|м[ао]л[ао]фь([яию]|[еёо]й))\\b";
-        String AD_SWEAR_WORD_DETECTED = """
+        String ADVERTISEMENT_SWEAR_WORD_DETECTED = """
             Возможно, Ваше описание содержало ненормативную лексику.
+            Распознано ненормативное слово <span class="tg-spoiler">%s</span>.
             Пожалуйста, введите измененный текст""";
         String CHOSEN_HASHTAGS = "Текущие выбранные хэштеги: %s";
         String INCORRECT_PREVIOUS_STATE = """
@@ -142,6 +142,28 @@ public final class Configuration {
             Справочная информация по функциям бота представлена по команде /%s.""";
         String NO_ADVERTISEMENTS = "Пользователь не опубликовал ни одного объявления.";
         String USER_ADVERTISEMENTS = "Опубликованные актуальные объявления пользователя:";
+        String NO_USER_ADVERTISEMENTS_FOUND = "Для пользователя %s не найдено ни одного созданного объявления.";
+        String RERUN_COMMAND = """
+            Невозможно перейти на следующий шаг.
+            Необходимо выполнить все условия для текущего шага.
+            Пожалуйста, пройдите шаг еще раз.""";
+        String DESCRIPTION_TOO_LONG = """
+            Введенное описание не корректное.
+            Разрешенная длина описания от 1 до %s символов.""";
+        String DESCRIPTION_ADDED = "Описание успешно добавлено.";
+        String PRICE_NOT_VALID = """
+            Введенная цена не корректна.
+            Цена должна быть представлена числом.""";
+        String PRICE_ADDED = "Цена успешно добавлена.";
+        String PHONE_NOT_VALID = """
+            Номер телефона не корректный.
+            Номер должен иметь вид: +7-900-000-00-00.""";
+        String PHONE_ADDED = "Номер телефона успешно добавлен.";
+        String CONTACT_NOT_VALID = """
+            Контакт не корректный.
+            Контакт должен начинаться на https://.""";
+        String CONTACT_ADDED = "Контакт успешно добавлен.";
+        String PHOTO_ADDED = "Фотография успешно добавлена.";
     }
 
     public interface NotificationMessage {
@@ -160,11 +182,18 @@ public final class Configuration {
         String CONTACT = "<span class=\"tg-spoiler\">%s</span>";
     }
 
-    public interface ExceptionMessage {
+    public interface Buttons {
+        String BACK_BUTTON = "Назад";
+        String NEXT_BUTTON = "Продолжить";
+    }
+
+    public interface ErrorMessage {
+        String SERVER_MESSAGE = "На сервере возникла ошибка: %s";
         String NO_NEXT_COMMAND = "Для команды '%s' не было найдено следующей команды для перехода.";
         String NO_PREVIOUS_COMMAND = "Для команды '%s' не было найдено предыдущей команды для перехода.";
         String NO_COMMAND_WITH_NAME = "Команды '%s' не существует.";
-        String NO_PREVIOUS_STATE_FOUND = "Для состояния бота '%s' не было найдено предыдущей состояния.";
+        String NO_CURRENT_STATE_FOUND = "Для пользователя '%s' не было найдено текущего состояния бота.";
+        String NO_MESSAGE_FOUND = "В апдейте '%s' не найдено сообщения.";
     }
 
 }

@@ -3,7 +3,6 @@ package baraholkateam.notification;
 import baraholkateam.bot.BaraholkaBot;
 import baraholkateam.rest.model.AdvertisementEntity;
 import baraholkateam.rest.service.AdvertisementService;
-import baraholkateam.rest.service.NotificationMessagesService;
 import baraholkateam.telegram_api_requests.TelegramAPIRequests;
 import baraholkateam.util.Configuration;
 import baraholkateam.util.Tag;
@@ -57,9 +56,6 @@ public class NotificationExecutor {
 
     @Autowired
     private AdvertisementService advertisementService;
-
-    @Autowired
-    private NotificationMessagesService notificationMessagesService;
 
     @Value("${channel.username}")
     private String channelUsername;
@@ -128,7 +124,7 @@ public class NotificationExecutor {
         }
     }
 
-    public void deleteMessages(AbsSender absSender, Long chatId, Long messageId) {
+    public void deleteMessages(AbsSender absSender, Long chatId, Integer messageId) {
         DeleteMessage deleteLastMessage = new DeleteMessage();
         if (notificationMessagesService.get(chatId) != null) {
             for (Message message : notificationMessagesService.get(chatId).get(messageId)) {
@@ -175,10 +171,10 @@ public class NotificationExecutor {
         }
     }
 
-    private void addNotificationMessage(Message message, Long chatId, Long messageId) {
-        Map<Long, List<Message>> currentMessagesMap = notificationMessagesService.get(chatId);
+    private void addNotificationMessage(Message message, Long chatId, Integer messageId) {
+        Map<Integer, List<Message>> currentMessagesMap = notificationMessagesService.get(chatId);
         if (currentMessagesMap == null) {
-            Map<Long, List<Message>> newMessagesMap = new ConcurrentHashMap<>();
+            Map<Integer, List<Message>> newMessagesMap = new ConcurrentHashMap<>();
             List<Message> newMessage = new CopyOnWriteArrayList<>();
             newMessage.add(message);
             newMessagesMap.put(messageId, newMessage);

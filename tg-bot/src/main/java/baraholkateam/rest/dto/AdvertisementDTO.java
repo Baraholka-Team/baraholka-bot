@@ -2,6 +2,7 @@ package baraholkateam.rest.dto;
 
 import baraholkateam.util.Configuration;
 import baraholkateam.util.Tag;
+import baraholkateam.util.TagType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -25,10 +26,12 @@ import java.util.Objects;
 @Builder
 public class AdvertisementDTO implements Serializable {
 
+    @JsonProperty("advertisement_id")
+    private Long advertisementId;
     @JsonProperty("chat_id")
     private Long chatId;
     @JsonProperty("message_id")
-    private Long messageId;
+    private Integer messageId;
     @JsonProperty("user_id")
     private Long userId;
     @JsonProperty("photos")
@@ -72,10 +75,10 @@ public class AdvertisementDTO implements Serializable {
         this.tags.addAll(tags);
     }
 
-    public String getTagsOfType(TagTypeDTO tagType) {
+    public String getTagsOfType(TagType tagType) {
         List<TagDTO> suitableTags = new ArrayList<>();
         for (TagDTO tag : getTags()) {
-            if (tag != null && Objects.equals(tag.getTagType(), tagType)) {
+            if (tag != null && Objects.equals(tag.getTagType().getTagTypeName(), tagType)) {
                 suitableTags.add(tag);
             }
         }

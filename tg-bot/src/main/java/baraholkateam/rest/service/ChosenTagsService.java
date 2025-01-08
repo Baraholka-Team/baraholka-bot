@@ -23,11 +23,11 @@ public class ChosenTagsService {
     /**
      * Получает теги, выбранные пользователем для поиска объявлений по тегам
      * @param chatId id чата
-     * @param messageId id сообщения
+     * @param userId id пользователя
      * @return выбранные пользователем теги или null, если сообщение в чате не найдено
      */
-    public ChosenTagsDTO getChosenTags(@NotNull Long chatId, @NotNull Long messageId) {
-        return chosenTagsRepository.findById(new ChosenTagsEntityId(chatId, messageId))
+    public ChosenTagsDTO getChosenTags(@NotNull Long chatId, @NotNull Long userId) {
+        return chosenTagsRepository.findById(new ChosenTagsEntityId(chatId, userId))
                 .map(ChosenTagsMapper::getChosenTagsDTO)
                 .orElse(null);
     }
@@ -35,11 +35,11 @@ public class ChosenTagsService {
     /**
      * Добавляет список тегов к уже имеющимся тегам
      * @param chatId id чата
-     * @param messageId id сообщения
+     * @param userId id пользователя
      * @param tags список тегов, добавляемый к уже заданным для поиска тегам
      */
-    public void addChosenTags(@NotNull Long chatId, @NotNull Long messageId, @NotNull List<TagDTO> tags) {
-        ChosenTagsDTO chosenTags = chosenTagsRepository.findById(new ChosenTagsEntityId(chatId, messageId))
+    public void addChosenTags(@NotNull Long chatId, @NotNull Long userId, @NotNull List<TagDTO> tags) {
+        ChosenTagsDTO chosenTags = chosenTagsRepository.findById(new ChosenTagsEntityId(chatId, userId))
                 .map(ChosenTagsMapper::getChosenTagsDTO)
                 .orElse(null);
         if (chosenTags != null) {
@@ -47,7 +47,7 @@ public class ChosenTagsService {
         } else {
             chosenTags = ChosenTagsDTO.builder()
                     .chatId(chatId)
-                    .messageId(messageId)
+                    .userId(userId)
                     .tags(tags)
                     .build();
         }
@@ -57,10 +57,10 @@ public class ChosenTagsService {
     /**
      * Удаляет выбранные пользователем теги
      * @param chatId id чата
-     * @param messageId id сообщения
+     * @param userId id пользователя
      */
-    public void removeChosenTags(@NotNull Long chatId, @NotNull Long messageId) {
-        chosenTagsRepository.deleteById(new ChosenTagsEntityId(chatId, messageId));
+    public void removeChosenTags(@NotNull Long chatId, @NotNull Long userId) {
+        chosenTagsRepository.deleteById(new ChosenTagsEntityId(chatId, userId));
     }
 
 }

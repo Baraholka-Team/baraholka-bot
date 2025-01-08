@@ -26,9 +26,12 @@ public class LastSentMessageEntity {
     private LastSentMessageEntityId lastSentMessageEntityId;
 
     @Column(name = "message_id", nullable = false)
-    private Long messageId;
+    private Integer messageId;
 
     @Column(name = "message_text", length = 1024, nullable = false)
     private String messageText;
+
+    @Column(name = "has_reply_markup", nullable = false)
+    private Boolean hasReplyMarkup;
 
 }

@@ -1,7 +1,10 @@
 package baraholkateam.command;
 
+import baraholkateam.exception.BaraholkaBotException;
+import baraholkateam.rest.dto.ChosenTagsDTO;
+import baraholkateam.rest.dto.TagDTO;
 import baraholkateam.rest.service.ChosenTagsService;
-import baraholkateam.rest.service.PreviousStateService;
+import baraholkateam.rest.service.StateService;
 import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
 import baraholkateam.util.Tag;
@@ -12,7 +15,6 @@ import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -21,21 +23,22 @@ public class SearchAdvertisementsAddProductCategoriesCommand extends BaraholkaBo
     @Autowired
     private ChosenTagsService chosenTagsService;
     @Autowired
-    private PreviousStateService previousStateService;
+    private StateService stateService;
 
     public SearchAdvertisementsAddProductCategoriesCommand() {
-        super(Command.SearchAdvertisements_AddProductCategories.getIdentifier(),
+        super(Command.SearchAdvertisements_AddProductCategories.getName(),
                 Command.SearchAdvertisements_AddProductCategories.getDescription());
     }
 
     @Override
-    public void execute(AbsSender absSender, User user, Chat chat, String[] arguments) {
-        List<Tag> tags = chosenTagsService.get(chat.getId());
-
-        if (previousStateService.get(chat.getId()) == Command.SearchAdvertisements_AddAdvertisementTypes) {
+    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] arguments) throws BaraholkaBotException {
+        ChosenTagsDTO tags = chosenTagsService.getChosenTags(chat.getId(), user.getId());
+        Command previousCommand = stateService.getState(chat.getId(), user.getId()).getPreviousCommand().getCommand();
+        if (previousCommand != null && previousCommand.equals(Command.SearchAdvertisements_AddAdvertisementTypes)) {
             String hashtags = Configuration.CommandMessage.NO_HASHTAGS;
-            if (tags != null && !tags.isEmpty()) {
-                hashtags = tags.stream()
+            if (tags != null && !tags.getTags().isEmpty()) {
+                hashtags = tags.getTags().stream()
+                        .map(TagDTO::getTag)
                         .map(Tag::getName)
                         .collect(Collectors.joining(" "));
             }
@@ -54,7 +57,7 @@ public class SearchAdvertisementsAddProductCategoriesCommand extends BaraholkaBo
                     absSender,
                     user,
                     chat,
-                    String.format(Configuration.CommandMessage.CHOOSE_PRODUCT_CATEGORY, Configuration.CommandMessage.NEXT_BUTTON_TEXT),
+                    String.format(Configuration.CommandMessage.CHOOSE_PRODUCT_CATEGORY, Configuration.Buttons.NEXT_BUTTON),
                     true
             );
         } else {
@@ -62,7 +65,7 @@ public class SearchAdvertisementsAddProductCategoriesCommand extends BaraholkaBo
                     absSender,
                     user,
                     chat,
-                    String.format(Configuration.CommandMessage.INCORRECT_PREVIOUS_STATE, Command.MainMenu.getIdentifier())
+                    String.format(Configuration.CommandMessage.INCORRECT_PREVIOUS_STATE, Command.MainMenu.getName())
             );
         }
     }

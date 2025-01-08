@@ -1,9 +1,17 @@
 package baraholkateam.command;
 
+import baraholkateam.rest.dto.AdvertisementDTO;
+import baraholkateam.rest.dto.ContactDTO;
+import baraholkateam.rest.dto.ContactTypeDTO;
+import baraholkateam.rest.service.AdvertisementService;
 import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
+import baraholkateam.util.ContactType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
@@ -12,12 +20,17 @@ import java.util.Collections;
 @Component
 public class NewAdvertisementAddSocialCommand extends BaraholkaBotCommand {
 
+    @Autowired
+    private AdvertisementService advertisementService;
+    @Value("${advertisement.social.regexp}")
+    private String socialRegularExpression;
+
     public NewAdvertisementAddSocialCommand() {
-        super(Command.NewAdvertisement_AddSocial.getIdentifier(), Command.NewAdvertisement_AddSocial.getDescription());
+        super(Command.NewAdvertisement_AddSocial.getName(), Command.NewAdvertisement_AddSocial.getDescription());
     }
 
     @Override
-    public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
+    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) {
         prepareReplyKeyboard(Collections.emptyList(), true);
         sendAnswer(
                 absSender,
@@ -26,6 +39,27 @@ public class NewAdvertisementAddSocialCommand extends BaraholkaBotCommand {
                 Configuration.CommandMessage.ADD_SOCIAL_TEXT,
                 true
         );
+    }
+
+    @Override
+    public TextProcessResult processUserInput(AbsSender absSender, Message message) {
+        String text = message.getText();
+        if (!text.matches(socialRegularExpression)) {
+            return new TextProcessResult(true, Configuration.CommandMessage.CONTACT_NOT_VALID);
+        }
+        Long chatId = message.getChatId();
+        Long userId = message.getFrom().getId();
+        AdvertisementDTO advertisementDTO = advertisementService.getLastUserAdvertisement(chatId, userId);
+        ContactTypeDTO contactTypeDTO = ContactTypeDTO.builder()
+                .contactTypeName(ContactType.Social)
+                .build();
+        ContactDTO contactDTO = ContactDTO.builder()
+                .contactType(contactTypeDTO)
+                .contactName(text)
+                .build();
+        advertisementDTO.addContact(contactDTO);
+        advertisementService.saveNewAdvertisement(advertisementDTO);
+        return new TextProcessResult(false, Configuration.CommandMessage.CONTACT_ADDED);
     }
 
 }

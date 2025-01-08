@@ -5,13 +5,13 @@ import baraholkateam.rest.dto.TagDTO;
 import baraholkateam.rest.mapper.AdvertisementMapper;
 import baraholkateam.rest.mapper.TagMapper;
 import baraholkateam.rest.model.AdvertisementEntity;
-import baraholkateam.rest.model.AdvertisementEntityId;
 import baraholkateam.rest.repository.AdvertisementRepository;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -26,18 +26,6 @@ public class AdvertisementService {
     private Integer searchAdvertisementsLimit;
 
     /**
-     * Получает объявление пользователя по id объявления
-     * @param chatId id чата
-     * @param messageId id сообщения в рамках чата
-     * @return объявление пользователя или null, если объявление не найдено
-     */
-    public AdvertisementDTO getAdvertisement(@NotNull Long chatId, @NotNull Long messageId) {
-        return advertisementRepository.findById(new AdvertisementEntityId(chatId, messageId))
-                .map(AdvertisementMapper::getAdvertisementDTO)
-                .orElse(null);
-    }
-
-    /**
      * Получает все объявления пользователя из чата
      * @param chatId id чата
      * @param userId id пользователя
@@ -47,6 +35,18 @@ public class AdvertisementService {
         return advertisementRepository.findAllByChatIdAndUserId(chatId, userId).stream()
                 .map(AdvertisementMapper::getAdvertisementDTO)
                 .toList();
+    }
+
+    /**
+     * Возвращает последнее созданное пользователем объявление
+     * @param chatId id чата
+     * @param userId id пользователя
+     * @return последнее объявление пользователя или null, если пользователь не создал ни одного объявления
+     */
+    public AdvertisementDTO getLastUserAdvertisement(@NotNull Long chatId, @NotNull Long userId) {
+        return getUserAdvertisements(chatId, userId).stream()
+                .max(Comparator.comparingLong(AdvertisementDTO::getCreationTime))
+                .orElse(null);
     }
 
     /**
@@ -62,8 +62,8 @@ public class AdvertisementService {
      * @param chatId id чата
      * @param messageId id сообщения в рамках чата
      */
-    public void removeAdvertisement(@NotNull Long chatId, @NotNull Long messageId) {
-        advertisementRepository.deleteById(new AdvertisementEntityId(chatId, messageId));
+    public void removeAdvertisement(@NotNull Long chatId, @NotNull Integer messageId) {
+        advertisementRepository.deleteByChatIdAndMessageId(chatId, messageId);
     }
 
     /**

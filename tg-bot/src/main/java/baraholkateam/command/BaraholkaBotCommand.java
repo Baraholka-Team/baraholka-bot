@@ -1,9 +1,16 @@
 package baraholkateam.command;
 
+import baraholkateam.exception.BaraholkaBotException;
+import baraholkateam.rest.dto.CommandDTO;
+import baraholkateam.rest.dto.LastSentMessageDTO;
+import baraholkateam.rest.dto.TagDTO;
+import baraholkateam.rest.dto.TagTypeDTO;
+import baraholkateam.rest.service.CommandService;
 import baraholkateam.rest.service.LastSentMessageService;
+import baraholkateam.rest.service.StateService;
+import baraholkateam.rest.service.TagService;
 import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
-import baraholkateam.util.Tag;
 import baraholkateam.util.TagType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,11 +39,58 @@ public abstract class BaraholkaBotCommand extends BotCommand {
 
     @Autowired
     private LastSentMessageService lastSentMessageService;
+    @Autowired
+    private CommandService commandService;
+    @Autowired
+    private StateService stateService;
+    @Autowired
+    private TagService tagService;
     ReplyKeyboard replyKeyboard;
 
-    public BaraholkaBotCommand(String commandIdentifier, String description) {
-        super(commandIdentifier, description);
+    public BaraholkaBotCommand(String name, String description) {
+        super(name, description);
     }
+
+    @Override
+    public void execute(AbsSender absSender, User user, Chat chat, String[] arguments) {
+        try {
+            CommandDTO currentCommand = commandService.getCommandByName(getCommandIdentifier());
+            stateService.changeCurrentState(chat.getId(), user.getId(), currentCommand);
+            executeCommand(absSender, user, chat, arguments);
+        } catch (BaraholkaBotException e) {
+            sendErrorMessage(absSender, user, chat, e);
+        }
+    }
+
+    /**
+     * Обрабатывает команду
+     * @param absSender обработчик команд
+     * @param user пользователь, отправивший команду
+     * @param chat чат с пользователем
+     * @param arguments аргументы команды
+     * @throws BaraholkaBotException если невозможно обработать команду
+     */
+    abstract void executeCommand(AbsSender absSender, User user, Chat chat, String[] arguments) throws BaraholkaBotException;
+
+    /**
+     * Обрабатывает введённый пользователем текст
+     * @param absSender обработчик текста
+     * @param message введённый пользователем текст
+     * @return необходимо ли заново обрабатывать команду и текст возвращаемого пользователю сообщения
+     * @apiNote по умолчанию возвращает переход на следующую команду и пустой текст ответного сообщения,
+     * если команда не предполагает обработку ввода текста пользователя
+     */
+    public TextProcessResult processUserInput(AbsSender absSender, Message message) {
+        return new TextProcessResult(false, null);
+    }
+
+    /**
+     * Обрабатывает текст на кнопке реплай-клавиатуры под диалогом
+     * @param message сообщение с текстом на нажатой пользователем кнопке
+     * @apiNote по умолчанию не производит никаких действий,
+     * если команда не предполагает обработку текста с кнопок пользователя
+     */
+    public void processReplyKeyboardCommandText(Message message) {}
 
     void sendAnswer(AbsSender absSender, User user, Chat chat, String text) {
         sendAnswer(absSender, user, chat, text, false);
@@ -44,29 +98,16 @@ public abstract class BaraholkaBotCommand extends BotCommand {
 
     void sendAnswer(AbsSender absSender, User user, Chat chat, String text, boolean withReplyKeyboard) {
         Long chatId = chat.getId();
-        SendMessage message = new SendMessage();
-        message.setChatId(chatId.toString());
-        message.setParseMode(ParseMode.HTML);
-        message.setText(text);
-        message.disableWebPagePreview();
-        if (withReplyKeyboard && replyKeyboard != null) {
-            message.setReplyMarkup(replyKeyboard);
-        } else {
-            KeyboardButton back = new KeyboardButton();
-            back.setText(Configuration.CommandMessage.BACK_BUTTON);
-            KeyboardRow line = new KeyboardRow();
-            line.add(back);
-            List<KeyboardRow> lines = new ArrayList<>(1);
-            lines.add(line);
-            ReplyKeyboardMarkup rkm = new ReplyKeyboardMarkup();
-            rkm.setKeyboard(lines);
-            rkm.setResizeKeyboard(true);
-            message.setReplyMarkup(rkm);
-        }
+        SendMessage message = getSendMessage(chatId, text, withReplyKeyboard);
 
         try {
             Message sentMessage = absSender.execute(message);
-            lastSentMessageService.put(chatId, sentMessage);
+            LastSentMessageDTO lastSentMessageDTO = LastSentMessageDTO.builder()
+                    .chatId(chatId)
+                    .userId(user.getId())
+                    .message(sentMessage)
+                    .build();
+            lastSentMessageService.addLastSentMessage(lastSentMessageDTO);
         } catch (TelegramApiException e) {
             log.error("Cannot execute command /{} of user {}: {}", getCommandIdentifier(), user.getUserName(), e.getMessage());
         }
@@ -79,11 +120,11 @@ public abstract class BaraholkaBotCommand extends BotCommand {
         rkm.setOneTimeKeyboard(true);
         List<KeyboardRow> nextList = new ArrayList<>(1);
         KeyboardRow next = new KeyboardRow();
-        next.add(new KeyboardButton(Configuration.CommandMessage.NEXT_BUTTON_TEXT));
+        next.add(new KeyboardButton(Configuration.Buttons.NEXT_BUTTON));
         nextList.add(next);
 
         KeyboardButton back = new KeyboardButton();
-        back.setText(Configuration.CommandMessage.BACK_BUTTON);
+        back.setText(Configuration.Buttons.BACK_BUTTON);
         KeyboardRow line = new KeyboardRow();
         line.add(back);
         nextList.add(line);
@@ -93,9 +134,7 @@ public abstract class BaraholkaBotCommand extends BotCommand {
         KeyboardRow menuLine = new KeyboardRow();
         menuLine.add(menu);
         nextList.add(menuLine);
-
         rkm.setKeyboard(nextList);
-
         replyKeyboard = rkm;
     }
 
@@ -105,13 +144,16 @@ public abstract class BaraholkaBotCommand extends BotCommand {
         int count = 0;
         int i = 0;
         List<InlineKeyboardButton> tagButton = new ArrayList<>(2);
-        for (Tag tag : Tag.values()) {
-            if (tag.getTagType() == tagType) {
-                String text = tag.getName();
-                String callbackData = String.format("%s %s", Configuration.CommandMessage.TAG_CALLBACK_DATA, tag.getName());
+        TagTypeDTO tagTypeDTO = TagTypeDTO.builder()
+                .tagTypeName(tagType)
+                .build();
+        for (TagDTO tag : tagService.getAllTagsByTagType(tagTypeDTO)) {
+            if (tag.getTagType().getTagTypeName().equals(tagType)) {
+                String text = tag.getTag().getName();
+                String callbackData = String.format("%s %s", Configuration.CommandMessage.TAG_CALLBACK_DATA, tag.getTag().getName());
                 if (isMultipleChoice) {
                     text = String.format(Configuration.CommandMessage.NOT_CHOSEN_TAG, text);
-                    callbackData = String.format("%s %s %d %d 0", Configuration.CommandMessage.TAGS_CALLBACK_DATA, tag.getName(),
+                    callbackData = String.format("%s %s %d %d 0", Configuration.CommandMessage.TAGS_CALLBACK_DATA, tag.getTag().getName(),
                             Math.floorDiv(count, 2), i % 2 == 0 ? 0 : 1);
                     count++;
                 }
@@ -131,7 +173,6 @@ public abstract class BaraholkaBotCommand extends BotCommand {
             tags.add(tagButton);
         }
         ikm.setKeyboard(tags);
-
         replyKeyboard = ikm;
     }
 
@@ -152,10 +193,36 @@ public abstract class BaraholkaBotCommand extends BotCommand {
         return rkm;
     }
 
+    void sendErrorMessage(AbsSender absSender, User user, Chat chat, Exception e) {
+        sendAnswer(absSender, user, chat, Configuration.ErrorMessage.SERVER_MESSAGE.formatted(e.getMessage()));
+    }
+
+    private SendMessage getSendMessage(Long chatId, String text, boolean withReplyKeyboard) {
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId.toString());
+        message.setParseMode(ParseMode.HTML);
+        message.setText(text);
+        message.disableWebPagePreview();
+        if (withReplyKeyboard && replyKeyboard != null) {
+            message.setReplyMarkup(replyKeyboard);
+        } else {
+            KeyboardButton back = new KeyboardButton();
+            back.setText(Configuration.Buttons.BACK_BUTTON);
+            KeyboardRow line = new KeyboardRow();
+            line.add(back);
+            List<KeyboardRow> lines = new ArrayList<>(1);
+            lines.add(line);
+            ReplyKeyboardMarkup rkm = new ReplyKeyboardMarkup();
+            rkm.setKeyboard(lines);
+            rkm.setResizeKeyboard(true);
+            message.setReplyMarkup(rkm);
+        }
+        return message;
+    }
+
     private static List<KeyboardRow> prepareLines(List<String> buttons) {
         List<KeyboardRow> lines = new ArrayList<>(1);
         KeyboardRow line = new KeyboardRow();
-
         if (buttons.size() == 1) {
             line.add(buttons.get(0));
             lines.add(line);
@@ -170,18 +237,22 @@ public abstract class BaraholkaBotCommand extends BotCommand {
                 }
             }
         }
-
         if (buttons.size() > 1 && buttons.size() % 2 == 1) {
             lines.add(line);
         }
-
         KeyboardButton back = new KeyboardButton();
-        back.setText(Configuration.CommandMessage.BACK_BUTTON);
+        back.setText(Configuration.Buttons.BACK_BUTTON);
         line = new KeyboardRow();
         line.add(back);
         lines.add(line);
-
         return lines;
     }
+
+    /**
+     * Результат обработки ввода пользователя
+     * @param shouldRerunCommand необходимо ли заново обработать текущую команду
+     * @param messageText ответ пользователю
+     */
+    public record TextProcessResult(Boolean shouldRerunCommand, String messageText) {}
 
 }

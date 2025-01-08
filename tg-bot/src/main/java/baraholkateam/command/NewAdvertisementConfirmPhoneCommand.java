@@ -1,10 +1,13 @@
 package baraholkateam.command;
 
-import baraholkateam.rest.model.CurrentAdvertisement;
-import baraholkateam.rest.service.CurrentAdvertisementService;
-import baraholkateam.rest.service.PreviousStateService;
+import baraholkateam.exception.BaraholkaBotException;
+import baraholkateam.rest.dto.AdvertisementDTO;
+import baraholkateam.rest.dto.ContactDTO;
+import baraholkateam.rest.service.AdvertisementService;
+import baraholkateam.rest.service.StateService;
 import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
+import baraholkateam.util.ContactType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Chat;
@@ -21,21 +24,24 @@ import java.util.List;
 public class NewAdvertisementConfirmPhoneCommand extends BaraholkaBotCommand {
 
     @Autowired
-    private CurrentAdvertisementService currentAdvertisementService;
+    private AdvertisementService advertisementService;
     @Autowired
-    private PreviousStateService previousStateService;
+    private StateService stateService;
 
     public NewAdvertisementConfirmPhoneCommand() {
-        super(Command.NewAdvertisement_ConfirmPhone.getIdentifier(),
-                Command.NewAdvertisement_ConfirmPhone.getDescription());
+        super(Command.NewAdvertisement_ConfirmPhone.getName(), Command.NewAdvertisement_ConfirmPhone.getDescription());
     }
 
     @Override
-    public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
-        CurrentAdvertisement currentAdvertisement = currentAdvertisementService.get(chat.getId());
-        String phone = currentAdvertisement.getPhone();
-        List<String> socials = currentAdvertisement.getContacts();
-        if (phone != null && previousStateService.get(chat.getId()) != Command.NewAdvertisement_AddSocial) {
+    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) throws BaraholkaBotException {
+        AdvertisementDTO advertisementDTO = advertisementService.getLastUserAdvertisement(chat.getId(), user.getId());
+        ContactDTO phone = advertisementDTO.getContacts().stream()
+                .filter(contactDTO -> contactDTO.getContactType().getContactTypeName().equals(ContactType.Phone))
+                .findFirst()
+                .orElse(null);
+        List<ContactDTO> socials = advertisementDTO.getContacts();
+        Command previousCommand = stateService.getState(chat.getId(), user.getId()).getPreviousCommand().getCommand();
+        if (phone != null && previousCommand != null && !previousCommand.equals(Command.NewAdvertisement_AddSocial)) {
             prepareReplyKeyboard(Collections.emptyList(), true);
             sendAnswer(
                     absSender,

@@ -5,7 +5,6 @@ import baraholkateam.rest.dto.ContactDTO;
 import baraholkateam.rest.dto.PhotoDTO;
 import baraholkateam.rest.dto.TagDTO;
 import baraholkateam.rest.model.AdvertisementEntity;
-import baraholkateam.rest.model.AdvertisementEntityId;
 import baraholkateam.rest.model.ContactEntity;
 import baraholkateam.rest.model.PhotoEntity;
 import baraholkateam.rest.model.TagEntity;
@@ -18,15 +17,13 @@ import java.util.List;
 public class AdvertisementMapper {
 
     public static AdvertisementEntity getAdvertisementEntity(AdvertisementDTO advertisementDTO) {
-        AdvertisementEntityId advertisementEntityId = AdvertisementEntityId.builder()
-                .messageId(advertisementDTO.getMessageId())
-                .chatId(advertisementDTO.getChatId())
-                .build();
         List<PhotoEntity> photoEntityList = PhotoMapper.getPhotoEntityList(advertisementDTO.getPhotos());
         List<TagEntity> tagEntityList = TagMapper.getTagEntityList(advertisementDTO.getTags());
         List<ContactEntity> contactEntityList = ContactMapper.getContactEntityList(advertisementDTO.getContacts());
         return AdvertisementEntity.builder()
-                .advertisementEntityId(advertisementEntityId)
+                .advertisementId(advertisementDTO.getAdvertisementId())
+                .chatId(advertisementDTO.getChatId())
+                .messageId(advertisementDTO.getMessageId())
                 .userId(advertisementDTO.getUserId())
                 .photos(photoEntityList)
                 .description(advertisementDTO.getDescription())
@@ -44,8 +41,9 @@ public class AdvertisementMapper {
         List<TagDTO> tagDTOList = TagMapper.getTagDTOList(advertisementEntity.getTags());
         List<ContactDTO> contactDTOList = ContactMapper.getContactDTOList(advertisementEntity.getContacts());
         return AdvertisementDTO.builder()
-                .messageId(advertisementEntity.getAdvertisementEntityId().getMessageId())
-                .chatId(advertisementEntity.getAdvertisementEntityId().getChatId())
+                .advertisementId(advertisementEntity.getAdvertisementId())
+                .chatId(advertisementEntity.getChatId())
+                .messageId(advertisementEntity.getMessageId())
                 .userId(advertisementEntity.getUserId())
                 .photos(photoDTOList)
                 .description(advertisementEntity.getDescription())

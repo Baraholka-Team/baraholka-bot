@@ -9,6 +9,7 @@ import java.io.Serializable;
 @Getter
 @AllArgsConstructor
 public enum Command implements Serializable {
+
     Start("start", "Старт"),
     Help("help", "Справочная информация по боту"),
     MainMenu("menu", "Главное меню"),
@@ -38,7 +39,7 @@ public enum Command implements Serializable {
 
     @JsonProperty("name")
     private final String name;
-    @JsonProperty("description") // TODO убрать description в базу
+    @JsonProperty("description")
     private final String description;
 
 }

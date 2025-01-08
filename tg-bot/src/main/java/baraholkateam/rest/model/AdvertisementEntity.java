@@ -2,14 +2,17 @@ package baraholkateam.rest.model;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,8 +33,16 @@ import java.util.List;
 @Builder
 public class AdvertisementEntity {
 
-    @EmbeddedId
-    private AdvertisementEntityId advertisementEntityId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "advertisement_sequence")
+    @Column(name = "id", nullable = false)
+    private Long advertisementId;
+
+    @Column(name = "chat_id", nullable = false)
+    private Long chatId;
+
+    @Column(name = "message_id", nullable = false)
+    private Integer messageId;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;

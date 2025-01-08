@@ -1,6 +1,6 @@
 package baraholkateam.command;
 
-import baraholkateam.rest.service.CurrentAdvertisementService;
+import baraholkateam.rest.service.AdvertisementService;
 import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
 import baraholkateam.util.TagType;
@@ -16,16 +16,16 @@ import java.util.Objects;
 public class NewAdvertisementAddCategoriesCommand extends BaraholkaBotCommand {
 
     @Autowired
-    private CurrentAdvertisementService currentAdvertisementService;
+    private AdvertisementService advertisementService;
 
     public NewAdvertisementAddCategoriesCommand() {
-        super(Command.NewAdvertisement_AddCategories.getIdentifier(),
+        super(Command.NewAdvertisement_AddCategories.getName(),
                 Command.NewAdvertisement_AddCategories.getDescription());
     }
 
     @Override
-    public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
-        String chosenAdvertisementTypeTags = currentAdvertisementService.get(chat.getId())
+    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) {
+        String chosenAdvertisementTypeTags = advertisementService.getLastUserAdvertisement(chat.getId(), user.getId())
                 .getTagsOfType(TagType.AdvertisementType);
         if (Objects.equals(chosenAdvertisementTypeTags, "")) {
             chosenAdvertisementTypeTags = Configuration.CommandMessage.NO_HASHTAGS;

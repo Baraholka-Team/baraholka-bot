@@ -17,11 +17,11 @@ import java.util.List;
 public class NewAdvertisementAddContactsCommand extends BaraholkaBotCommand {
 
     public NewAdvertisementAddContactsCommand() {
-        super(Command.NewAdvertisement_AddContacts.getIdentifier(), Command.NewAdvertisement_AddContacts.getDescription());
+        super(Command.NewAdvertisement_AddContacts.getName(), Command.NewAdvertisement_AddContacts.getDescription());
     }
 
     @Override
-    public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
+    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) {
         prepareReplyKeyboard(Collections.emptyList(), true);
         sendAnswer(
                 absSender,

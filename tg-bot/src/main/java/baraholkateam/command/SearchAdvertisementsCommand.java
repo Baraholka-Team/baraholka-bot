@@ -17,12 +17,12 @@ public class SearchAdvertisementsCommand extends BaraholkaBotCommand {
     private ChosenTagsService chosenTagsService;
 
     public SearchAdvertisementsCommand() {
-        super(Command.SearchAdvertisements.getIdentifier(), Command.SearchAdvertisements.getDescription());
+        super(Command.SearchAdvertisements.getName(), Command.SearchAdvertisements.getDescription());
     }
 
     @Override
-    public void execute(AbsSender absSender, User user, Chat chat, String[] arguments) {
-        chosenTagsService.delete(chat.getId());
+    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] arguments) {
+        chosenTagsService.removeChosenTags(chat.getId(), user.getId());
 
         prepareNextButton();
         sendAnswer(
@@ -38,7 +38,7 @@ public class SearchAdvertisementsCommand extends BaraholkaBotCommand {
                 absSender,
                 user,
                 chat,
-                String.format(Configuration.CommandMessage.CHOOSE_CITY, Configuration.CommandMessage.NEXT_BUTTON_TEXT),
+                String.format(Configuration.CommandMessage.CHOOSE_CITY, Configuration.Buttons.NEXT_BUTTON),
                 true
         );
     }

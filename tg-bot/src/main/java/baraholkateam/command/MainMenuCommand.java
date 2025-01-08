@@ -13,22 +13,22 @@ import java.util.List;
 public class MainMenuCommand extends BaraholkaBotCommand {
 
     public MainMenuCommand() {
-        super(Command.MainMenu.getIdentifier(), Command.MainMenu.getDescription());
+        super(Command.MainMenu.getName(), Command.MainMenu.getDescription());
     }
 
     @Override
-    public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
+    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) {
         prepareButtons();
         sendAnswer(
                 absSender,
                 user,
                 chat,
                 String.format(Configuration.CommandMessage.MAIN_MENU,
-                        Command.NewAdvertisement.getIdentifier(),
-                        Command.DeleteAdvertisement.getIdentifier(),
-                        Command.SearchAdvertisements.getIdentifier(),
-                        Command.UserAdvertisements.getIdentifier(),
-                        Command.Help.getIdentifier()
+                        Command.NewAdvertisement.getName(),
+                        Command.DeleteAdvertisement.getName(),
+                        Command.SearchAdvertisements.getName(),
+                        Command.UserAdvertisements.getName(),
+                        Command.Help.getName()
                 ),
                 true
         );

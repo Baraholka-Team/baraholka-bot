@@ -13,11 +13,11 @@ import java.util.List;
 public class StartCommand extends BaraholkaBotCommand {
 
     public StartCommand() {
-        super(Command.Start.getIdentifier(), Command.Start.getDescription());
+        super(Command.Start.getName(), Command.Start.getDescription());
     }
 
     @Override
-    public void execute(AbsSender absSender, User user, Chat chat, String[] arguments) {
+    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] arguments) {
         prepareReplyKeyboard(
                 List.of(
                         Command.NewAdvertisement.getDescription(),
@@ -34,11 +34,11 @@ public class StartCommand extends BaraholkaBotCommand {
                 chat,
                 String.format(
                         Configuration.CommandMessage.START_ANSWER,
-                        Command.NewAdvertisement.getIdentifier(),
-                        Command.SearchAdvertisements.getIdentifier(),
-                        Command.UserAdvertisements.getIdentifier(),
-                        Command.MainMenu.getIdentifier(),
-                        Command.Help.getIdentifier()
+                        Command.NewAdvertisement.getName(),
+                        Command.SearchAdvertisements.getName(),
+                        Command.UserAdvertisements.getName(),
+                        Command.MainMenu.getName(),
+                        Command.Help.getName()
                 ),
                 true
         );

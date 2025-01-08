@@ -1,9 +1,12 @@
 package baraholkateam.command;
 
+import baraholkateam.exception.BaraholkaBotException;
+import baraholkateam.rest.dto.ChosenTagsDTO;
+import baraholkateam.rest.dto.TagDTO;
 import baraholkateam.rest.model.AdvertisementEntity;
 import baraholkateam.rest.service.AdvertisementService;
 import baraholkateam.rest.service.ChosenTagsService;
-import baraholkateam.rest.service.PreviousStateService;
+import baraholkateam.rest.service.StateService;
 import baraholkateam.telegram_api_requests.TelegramAPIRequests;
 import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
@@ -32,25 +35,26 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
     @Autowired
     private AdvertisementService advertisementService;
     @Autowired
-    private PreviousStateService previousStateService;
+    private StateService stateService;
     @Value("${channel.username}")
     private String channelUsername;
     @Value("${search_advertisement_limit}")
     private Integer searchAdvertisementsLimit;
 
     public SearchAdvertisementsShowFoundAdvertisementsCommand() {
-        super(Command.SearchAdvertisements_ShowFoundAdvertisements.getIdentifier(),
+        super(Command.SearchAdvertisements_ShowFoundAdvertisements.getName(),
                 Command.SearchAdvertisements_ShowFoundAdvertisements.getDescription());
     }
 
     @Override
-    public void execute(AbsSender absSender, User user, Chat chat, String[] arguments) {
-        List<Tag> tags = chosenTagsService.get(chat.getId());
-
-        if (previousStateService.get(chat.getId()) == Command.SearchAdvertisements_AddProductCategories) {
+    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] arguments) throws BaraholkaBotException {
+        ChosenTagsDTO tags = chosenTagsService.getChosenTags(chat.getId(), user.getId());
+        Command previousCommand = stateService.getState(chat.getId(), user.getId()).getPreviousCommand().getCommand();
+        if (previousCommand != null && previousCommand.equals(Command.SearchAdvertisements_AddProductCategories)) {
             String hashtags = Configuration.CommandMessage.NO_HASHTAGS;
-            if (tags != null && !tags.isEmpty()) {
-                hashtags = tags.stream()
+            if (tags != null && !tags.getTags().isEmpty()) {
+                hashtags = tags.getTags().stream()
+                        .map(TagDTO::getTag)
                         .map(Tag::getName)
                         .collect(Collectors.joining(" "));
             }
@@ -62,7 +66,7 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
                     String.format(Configuration.CommandMessage.CHOSEN_HASHTAGS, hashtags)
             );
 
-            int count = forwardMessages(chat.getId());
+            int count = forwardMessages(chat.getId(), user.getId());
 
             if (count == 0) {
                 prepareCommandButtons(
@@ -77,8 +81,8 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
                         chat,
                         String.format(
                                 Configuration.CommandMessage.CANNOT_FIND_ADVERTISEMENTS,
-                                Command.MainMenu.getIdentifier(),
-                                Command.SearchAdvertisements.getIdentifier()
+                                Command.MainMenu.getName(),
+                                Command.SearchAdvertisements.getName()
                         ),
                         true);
             } else {
@@ -96,8 +100,8 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
                                 Configuration.CommandMessage.FOUND_ADVERTISEMENTS,
                                 count,
                                 searchAdvertisementsLimit,
-                                Command.MainMenu.getIdentifier(),
-                                Command.SearchAdvertisements.getIdentifier()
+                                Command.MainMenu.getName(),
+                                Command.SearchAdvertisements.getName()
                         ),
                         true
                 );
@@ -107,19 +111,17 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
                     absSender,
                     user,
                     chat,
-                    String.format(Configuration.CommandMessage.INCORRECT_PREVIOUS_STATE, Command.MainMenu.getIdentifier())
+                    String.format(Configuration.CommandMessage.INCORRECT_PREVIOUS_STATE, Command.MainMenu.getName())
             );
         }
     }
 
-    private int forwardMessages(Long chatId) {
-        List<Tag> tags = chosenTagsService.get(chatId);
-        if (tags == null || tags.isEmpty()) {
+    private int forwardMessages(Long chatId, Long userId) {
+        ChosenTagsDTO tags = chosenTagsService.getChosenTags(chatId, userId);
+        if (tags == null || tags.getTags().isEmpty()) {
             return 0;
         }
-        List<AdvertisementEntity> sortedAds = advertisementService.searchAdvertisementsWithTags(tags.stream()
-                .map(Tag::getName)
-                .toArray(String[]::new));
+        List<AdvertisementEntity> sortedAds = advertisementService.searchAdvertisementsWithTags(tags.getTags());
         int count = 0;
         for (AdvertisementEntity sortedAd : sortedAds) {
             telegramAPIRequests.forwardMessage(channelUsername, String.valueOf(chatId),

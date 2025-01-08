@@ -7,6 +7,7 @@ import baraholkateam.rest.mapper.StateMapper;
 import baraholkateam.rest.model.StateEntity;
 import baraholkateam.rest.model.StateEntityId;
 import baraholkateam.rest.repository.StateRepository;
+import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,8 @@ public class StateService {
 
     @Autowired
     private StateRepository stateRepository;
+    @Autowired
+    private CommandService commandService;
 
     /**
      * Получает состояние бота
@@ -58,17 +61,24 @@ public class StateService {
         Optional<StateEntity> stateEntityOptional = stateRepository.findById(new StateEntityId(chatId, userId));
         if (stateEntityOptional.isPresent()) {
             StateDTO stateDTO = StateMapper.getStateDTO(stateEntityOptional.get());
-            if (stateDTO.getPreviousCommand() != null) {
+            if (stateDTO.getCurrentCommand() != null) {
                 stateDTO.setPreviousCommand(stateDTO.getCurrentCommand());
             } else {
                 throw new BaraholkaBotException(
-                        Configuration.ExceptionMessage.NO_PREVIOUS_STATE_FOUND.formatted(
-                                stateDTO.getCurrentCommand().getCommand().getName()
-                        )
+                        Configuration.ErrorMessage.NO_CURRENT_STATE_FOUND.formatted(userId)
                 );
             }
             stateDTO.setCurrentCommand(currentCommandDTO);
             stateRepository.save(StateMapper.getStateEntity(stateDTO));
+        } else {
+            CommandDTO previousCommandDTO = commandService.getCommandByName(Command.Start.getName());
+            StateDTO newStateDTO = StateDTO.builder()
+                    .chatId(chatId)
+                    .userId(userId)
+                    .currentCommand(currentCommandDTO)
+                    .previousCommand(previousCommandDTO)
+                    .build();
+            stateRepository.save(StateMapper.getStateEntity(newStateDTO));
         }
     }
 

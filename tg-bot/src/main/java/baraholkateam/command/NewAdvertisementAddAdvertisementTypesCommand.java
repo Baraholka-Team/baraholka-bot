@@ -1,6 +1,6 @@
 package baraholkateam.command;
 
-import baraholkateam.rest.service.CurrentAdvertisementService;
+import baraholkateam.rest.service.AdvertisementService;
 import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
 import baraholkateam.util.TagType;
@@ -14,21 +14,21 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 public class NewAdvertisementAddAdvertisementTypesCommand extends BaraholkaBotCommand {
 
     @Autowired
-    private CurrentAdvertisementService currentAdvertisementService;
+    private AdvertisementService advertisementService;
 
     public NewAdvertisementAddAdvertisementTypesCommand() {
-        super(Command.NewAdvertisement_AddAdvertisementTypes.getIdentifier(),
+        super(Command.NewAdvertisement_AddAdvertisementTypes.getName(),
                 Command.NewAdvertisement_AddAdvertisementTypes.getDescription());
     }
 
     @Override
-    public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
+    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) {
         prepareNextButton();
         sendAnswer(
                 absSender,
                 user,
                 chat,
-                String.format(Configuration.CommandMessage.CHOSEN_CITY, currentAdvertisementService.get(chat.getId()).getTagsOfType(TagType.City)),
+                String.format(Configuration.CommandMessage.CHOSEN_CITY, advertisementService.getLastUserAdvertisement(chat.getId(), user.getId()).getTagsOfType(TagType.City)),
                 true
         );
 

@@ -77,7 +77,7 @@ public class BaraholkaBotRestController {
     @RequestMapping(method = RequestMethod.POST, value = "/delete_advertisement/{message_id}",
             headers = {"content-type=application/json"})
     public ResponseEntity<HttpStatus> deleteAdvertisement(@RequestBody TelegramUserInfo userInfo,
-                                                          @PathVariable("message_id") Long messageId) {
+                                                          @PathVariable("message_id") Integer messageId) {
         Long userId = userInfo.id();
 
         if (userId == null || messageId == null) {

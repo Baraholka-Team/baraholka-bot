@@ -2,8 +2,6 @@ package baraholkateam.command;
 
 import baraholkateam.util.Command;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 
 import java.util.List;
 
@@ -35,60 +33,43 @@ public class NonCommand {
             Цена должна состоять только из цифр и ее длина не должна превышать 18 символов.
             Пожалуйста, введите цену еще раз.""";
 
-    public List<AnswerPair> nonCommandExecute(Message msg, Command currentCommand) {
+    public List<AnswerPair> nonCommandExecute(Command currentCommand) {
         if (currentCommand == null) {
-            return List.of(new AnswerPair(String.format(NO_CURRENT_STATE, Command.MainMenu.getIdentifier()), true, null));
+            return List.of(new AnswerPair(String.format(NO_CURRENT_STATE, Command.MainMenu.getName()), true));
         }
 
-        if (currentCommand.equals(Command.Start) || currentCommand.equals(Command.Help) || currentCommand.equals(Command.MainMenu)
-                || currentCommand.equals(Command.NewAdvertisement)) {
-            return List.of(new AnswerPair(String.format(COMMAND_ERROR_MESSAGE, currentCommand.getIdentifier(),
-                    Command.MainMenu.getIdentifier()), true, null));
+        if (currentCommand.equals(Command.Start)
+                || currentCommand.equals(Command.Help)
+                || currentCommand.equals(Command.MainMenu)
+                || currentCommand.equals(Command.NewAdvertisement)
+        ) {
+            return List.of(new AnswerPair(String.format(COMMAND_ERROR_MESSAGE, currentCommand.getName(),
+                    Command.MainMenu.getName()), true));
         } else if (currentCommand.equals(Command.NewAdvertisement_AddDescription)) {
-            return List.of(new AnswerPair(EMPTY_DESCRIPTION, true, null));
+            return List.of(new AnswerPair(EMPTY_DESCRIPTION, true));
         } else if (currentCommand.equals(Command.NewAdvertisement_AddPhone)) {
-           return List.of(new AnswerPair(INVALID_PHONE_NUMBER, true, null));
+           return List.of(new AnswerPair(INVALID_PHONE_NUMBER, true));
         } else if (currentCommand.equals(Command.NewAdvertisement_AddSocial)) {
-            return List.of(new AnswerPair(INVALID_SOCIAL, true, null));
+            return List.of(new AnswerPair(INVALID_SOCIAL, true));
         } else if (currentCommand.equals(Command.NewAdvertisement_AddPrice)) {
-            return List.of(new AnswerPair(INVALID_PRICE, true, null));
+            return List.of(new AnswerPair(INVALID_PRICE, true));
         } else if (currentCommand.equals(Command.SearchAdvertisements)) {
-            return List.of(new AnswerPair(CHOOSE_CITY, true, null));
+            return List.of(new AnswerPair(CHOOSE_CITY, true));
         } else if (currentCommand.equals(Command.SearchAdvertisements_AddAdvertisementTypes)) {
-            return List.of(new AnswerPair(CHOOSE_ADVERTISEMENT_TYPES, true, null));
+            return List.of(new AnswerPair(CHOOSE_ADVERTISEMENT_TYPES, true));
         } else if (currentCommand.equals(Command.SearchAdvertisements_AddProductCategories)) {
-            return List.of(new AnswerPair(CHOOSE_PRODUCT_CATEGORIES, true, null));
+            return List.of(new AnswerPair(CHOOSE_PRODUCT_CATEGORIES, true));
         } else if (currentCommand.equals(Command.SearchAdvertisements_ShowFoundAdvertisements)) {
-            return List.of(new AnswerPair(UNKNOWN_COMMAND, true, null));
+            return List.of(new AnswerPair(UNKNOWN_COMMAND, true));
         }
-        return List.of(new AnswerPair(UNKNOWN_COMMAND, true, null));
+        return List.of(new AnswerPair(UNKNOWN_COMMAND, true));
     }
 
     /**
      * Хранит ответ бота с индикатором ранее присланного ошибочного сообщения от пользователя.
+     * @param answer ответ бота
+     * @param isError содержит ли предыдущий ответ пользователя ошибку
      */
-    public static class AnswerPair {
-        private final String answer;
-        private final Boolean isError;
-        private final ReplyKeyboard inlineKeyboardMarkup;
-
-        public AnswerPair(String answer, boolean isError, ReplyKeyboard inlineKeyboardMarkup) {
-            this.answer = answer;
-            this.isError = isError;
-            this.inlineKeyboardMarkup = inlineKeyboardMarkup;
-        }
-
-        public String getAnswer() {
-            return answer;
-        }
-
-        public Boolean getError() {
-            return isError;
-        }
-
-        public ReplyKeyboard getReplyKeyboard() {
-            return inlineKeyboardMarkup;
-        }
-    }
+    public record AnswerPair(String answer, Boolean isError) { }
 
 }

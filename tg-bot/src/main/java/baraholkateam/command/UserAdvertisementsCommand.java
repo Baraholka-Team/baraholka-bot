@@ -1,7 +1,7 @@
 package baraholkateam.command;
 
-import baraholkateam.rest.model.AdvertisementEntity;
-import baraholkateam.rest.repository.AdvertisementRepository;
+import baraholkateam.rest.dto.AdvertisementDTO;
+import baraholkateam.rest.service.AdvertisementService;
 import baraholkateam.rest.service.LastSentMessageService;
 import baraholkateam.telegram_api_requests.TelegramAPIRequests;
 import baraholkateam.util.Command;
@@ -21,20 +21,19 @@ public class UserAdvertisementsCommand extends BaraholkaBotCommand {
     @Autowired
     private TelegramAPIRequests telegramAPIRequests;
     @Autowired
-    private AdvertisementRepository advertisementRepository;
+    private AdvertisementService advertisementService;
     @Autowired
     private LastSentMessageService lastSentMessageService;
     @Value("${channel.chat_id}")
     private String channelChatId;
 
     public UserAdvertisementsCommand() {
-        super(Command.UserAdvertisements.getIdentifier(), Command.UserAdvertisements.getDescription());
+        super(Command.UserAdvertisements.getName(), Command.UserAdvertisements.getDescription());
     }
 
     @Override
-    public void execute(AbsSender absSender, User user, Chat chat, String[] arguments) {
-        List<AdvertisementEntity> advertisementEntities = advertisementRepository
-                .findAllByOwnerChatId(chat.getId());
+    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] arguments) {
+        List<AdvertisementDTO> advertisementEntities = advertisementService.getUserAdvertisements(chat.getId(), user.getId());
 
         if (advertisementEntities != null && !advertisementEntities.isEmpty()) {
             sendAnswer(
@@ -44,10 +43,10 @@ public class UserAdvertisementsCommand extends BaraholkaBotCommand {
                     Configuration.CommandMessage.USER_ADVERTISEMENTS
             );
 
-            for (AdvertisementEntity advertisementEntity : advertisementEntities) {
+            for (AdvertisementDTO advertisementEntity : advertisementEntities) {
                 telegramAPIRequests.forwardMessage(
                         channelChatId,
-                        String.valueOf(advertisementEntity.getOwnerChatId()),
+                        String.valueOf(advertisementEntity.getUserId()),
                         advertisementEntity.getMessageId()
                 );
             }

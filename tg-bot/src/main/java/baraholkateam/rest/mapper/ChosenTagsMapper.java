@@ -16,7 +16,7 @@ public class ChosenTagsMapper {
     public static ChosenTagsEntity getChosenTagsEntity(ChosenTagsDTO chosenTagsDTO) {
         ChosenTagsEntityId chosenTagsEntityId = ChosenTagsEntityId.builder()
                 .chatId(chosenTagsDTO.getChatId())
-                .messageId(chosenTagsDTO.getMessageId())
+                .userId(chosenTagsDTO.getUserId())
                 .build();
 
         List<TagEntity> tags = TagMapper.getTagEntityList(chosenTagsDTO.getTags());
@@ -30,7 +30,7 @@ public class ChosenTagsMapper {
         List<TagDTO> tags = TagMapper.getTagDTOList(chosenTagsEntity.getTags());
         return ChosenTagsDTO.builder()
                 .chatId(chosenTagsEntity.getChosenTagsEntityId().getChatId())
-                .messageId(chosenTagsEntity.getChosenTagsEntityId().getMessageId())
+                .userId(chosenTagsEntity.getChosenTagsEntityId().getUserId())
                 .tags(tags)
                 .build();
     }

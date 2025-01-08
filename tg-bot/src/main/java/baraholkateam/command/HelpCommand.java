@@ -21,11 +21,11 @@ public class HelpCommand extends BaraholkaBotCommand {
     );
 
     public HelpCommand() {
-        super(Command.Help.getIdentifier(), Command.Help.getDescription());
+        super(Command.Help.getName(), Command.Help.getDescription());
     }
 
     @Override
-    public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
+    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) {
         sendAnswer(absSender, user, chat, String.format(Configuration.CommandMessage.HELP_INFO, getAvailableCommands()));
     }
 
@@ -33,7 +33,7 @@ public class HelpCommand extends BaraholkaBotCommand {
         StringBuilder result = new StringBuilder();
         for (Command command : AVAILABLE_COMMANDS) {
             result.append("/")
-                    .append(command.getIdentifier())
+                    .append(command.getName())
                     .append(" - ")
                     .append(command.getDescription())
                     .append("\n");

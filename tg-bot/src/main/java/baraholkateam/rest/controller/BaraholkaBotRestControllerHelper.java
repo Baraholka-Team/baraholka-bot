@@ -204,7 +204,7 @@ public class BaraholkaBotRestControllerHelper {
         return false;
     }
 
-    void deleteMessage(Long messageId) throws TelegramApiException {
+    void deleteMessage(Integer messageId) throws TelegramApiException {
         EditMessageCaption editMessage = new EditMessageCaption();
         String adText = advertisementService.adText(messageId)
                 .substring(Tag.Actual.getName().length() + 1);
@@ -217,7 +217,7 @@ public class BaraholkaBotRestControllerHelper {
         baraholkaBot.execute(editMessage);
     }
 
-    boolean isUserMessageOwner(Long userId, Long messageId) {
+    boolean isUserMessageOwner(Long userId, Integer messageId) {
         AdvertisementEntity advertisementEntity = advertisementService.get(messageId);
         return advertisementEntity != null && Objects.equals(advertisementEntity.getOwnerChatId(), userId);
     }

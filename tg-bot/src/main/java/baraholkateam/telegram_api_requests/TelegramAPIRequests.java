@@ -52,7 +52,7 @@ public class TelegramAPIRequests {
     @Value("${channel.username}")
     private String channelUsername;
 
-    public Long forwardMessage(String fromChatId, String toChatId, Long messageId) {
+    public Long forwardMessage(String fromChatId, String toChatId, Integer messageId) {
         try {
             URI uri = new URIBuilder(String.format(FORWARD_MESSAGE, botToken))
                     .addParameter(CHAT_ID_PARAMETER, String.format("%s", toChatId))

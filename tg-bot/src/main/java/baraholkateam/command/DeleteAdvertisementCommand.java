@@ -1,8 +1,6 @@
 package baraholkateam.command;
 
 import baraholkateam.rest.dto.AdvertisementDTO;
-import baraholkateam.rest.mapper.AdvertisementMapper;
-import baraholkateam.rest.model.AdvertisementEntity;
 import baraholkateam.rest.service.AdvertisementService;
 import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
@@ -24,13 +22,13 @@ public class DeleteAdvertisementCommand extends BaraholkaBotCommand {
     private AdvertisementService advertisementService;
 
     public DeleteAdvertisementCommand() {
-        super(Command.DeleteAdvertisement.getIdentifier(), Command.DeleteAdvertisement.getDescription());
+        super(Command.DeleteAdvertisement.getName(), Command.DeleteAdvertisement.getDescription());
     }
 
     @Override
-    public void execute(AbsSender absSender, User user, Chat chat, String[] arguments) {
+    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] arguments) {
         long chatId = chat.getId();
-        List<AdvertisementEntity> ads = advertisementService.getUserAdvertisements(chatId);
+        List<AdvertisementDTO> ads = advertisementService.getUserAdvertisements(chatId, user.getId());
 
         if (ads == null || ads.isEmpty()) {
             sendAnswer(absSender, user, chat, Configuration.CommandMessage.NO_ADS_TO_DELETE);
@@ -40,14 +38,13 @@ public class DeleteAdvertisementCommand extends BaraholkaBotCommand {
         }
     }
 
-    private void prepareInlineKeyBoardMessage(List<AdvertisementEntity> advertisementEntities) {
+    private void prepareInlineKeyBoardMessage(List<AdvertisementDTO> advertisementEntities) {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
 
         advertisementEntities.forEach(advertisement -> {
-            AdvertisementDTO advertisementDTO = AdvertisementMapper.getAdvertisementDTO(advertisement);
             InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
-            String description = advertisementDTO.getAdvertisementText();
+            String description = advertisement.getAdvertisementText();
             int descIndex = description.indexOf(Configuration.AdvertisementDescriptionParts.DESCRIPTION_TEXT);
             inlineKeyboardButton.setText(
                     description
@@ -55,7 +52,7 @@ public class DeleteAdvertisementCommand extends BaraholkaBotCommand {
                                     descIndex + Configuration.AdvertisementDescriptionParts.DESCRIPTION_TEXT.length() + 40)
                             .concat("...")
             );
-            inlineKeyboardButton.setCallbackData(String.format("%s %d", Configuration.CommandMessage.DELETE_CALLBACK_TEXT, advertisementDTO.getMessageId()));
+            inlineKeyboardButton.setCallbackData(String.format("%s %d", Configuration.CommandMessage.DELETE_CALLBACK_TEXT, advertisement.getMessageId()));
             List<InlineKeyboardButton> keyboardButtonsRow = new ArrayList<>();
             keyboardButtonsRow.add(inlineKeyboardButton);
             rowList.add(keyboardButtonsRow);

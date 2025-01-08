@@ -23,8 +23,8 @@ public class ChosenTagsDTO implements Serializable {
 
     @JsonProperty("chat_id")
     private Long chatId;
-    @JsonProperty("message_id")
-    private Long messageId;
+    @JsonProperty("user_id")
+    private Long userId;
     @JsonProperty("tags")
     private List<TagDTO> tags = new ArrayList<>();
 
