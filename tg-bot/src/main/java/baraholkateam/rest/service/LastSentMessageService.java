@@ -4,17 +4,17 @@ import baraholkateam.rest.dto.LastSentMessageDTO;
 import baraholkateam.rest.mapper.LastSentMessageMapper;
 import baraholkateam.rest.model.LastSentMessageEntityId;
 import baraholkateam.rest.repository.LastSentMessageRepository;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 /**
  * Сервис для работы с последним сообщением, отправленным ботом пользователю
  */
 @Service
+@AllArgsConstructor
 public class LastSentMessageService {
 
-    @Autowired
     private LastSentMessageRepository lastSentMessageRepository;
 
     /**

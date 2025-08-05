@@ -20,6 +20,8 @@ public class StateMapper {
                 .stateEntityId(stateEntityId)
                 .currentCommand(CommandMapper.getCommandEntity(stateDTO.getCurrentCommand()))
                 .previousCommand(CommandMapper.getCommandEntity(stateDTO.getPreviousCommand()))
+                .isFinished(stateDTO.getIsFinished())
+                .isRepeat(stateDTO.getIsRepeat())
                 .build();
     }
 
@@ -29,6 +31,8 @@ public class StateMapper {
                 .userId(stateEntity.getStateEntityId().getUserId())
                 .currentCommand(CommandMapper.getCommandDTO(stateEntity.getCurrentCommand()))
                 .previousCommand(CommandMapper.getCommandDTO(stateEntity.getPreviousCommand()))
+                .isFinished(stateEntity.getIsFinished())
+                .isRepeat(stateEntity.getIsRepeat())
                 .build();
     }
 

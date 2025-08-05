@@ -29,7 +29,7 @@ public class ContactTypeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "contact_type_sequence")
-    @Column(name = "id", nullable = false)
+    @Column(name = "contact_type_id", nullable = false)
     private Long contactTypeId;
 
     @Column(name = "name", unique = true, length = 64, nullable = false)

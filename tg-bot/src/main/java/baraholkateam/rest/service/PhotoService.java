@@ -3,17 +3,17 @@ package baraholkateam.rest.service;
 import baraholkateam.rest.dto.PhotoDTO;
 import baraholkateam.rest.mapper.PhotoMapper;
 import baraholkateam.rest.repository.PhotoRepository;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 /**
  * Сервис для работы с фотографиями товаров пользователя из объявления
  */
 @Service
+@AllArgsConstructor
 public class PhotoService {
 
-    @Autowired
     private PhotoRepository photoRepository;
 
     /**

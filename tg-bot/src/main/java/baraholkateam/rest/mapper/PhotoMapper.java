@@ -3,7 +3,9 @@ package baraholkateam.rest.mapper;
 import baraholkateam.rest.dto.PhotoDTO;
 import baraholkateam.rest.model.PhotoEntity;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Маппер бизнес сущности фотографии из объявления пользователя и JPA сущности
@@ -27,13 +29,13 @@ public class PhotoMapper {
     public static List<PhotoEntity> getPhotoEntityList(List<PhotoDTO> photoDTOList) {
         return photoDTOList.stream()
                 .map(PhotoMapper::getPhotoEntity)
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public static List<PhotoDTO> getPhotoDTOList(List<PhotoEntity> photoEntityList) {
         return photoEntityList.stream()
                 .map(PhotoMapper::getPhotoDTO)
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
     }
     
 }

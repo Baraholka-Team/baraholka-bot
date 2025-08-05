@@ -35,14 +35,17 @@ public class AdvertisementDTO implements Serializable {
     @JsonProperty("user_id")
     private Long userId;
     @JsonProperty("photos")
+    @Builder.Default
     private List<PhotoDTO> photos = new ArrayList<>();
     @JsonProperty("description")
     private String description;
     @JsonProperty("tags")
+    @Builder.Default
     private List<TagDTO> tags = new ArrayList<>();
     @JsonProperty("price")
     private Long price;
     @JsonProperty("contacts")
+    @Builder.Default
     private List<ContactDTO> contacts = new ArrayList<>();
     @JsonIgnore
     private Long creationTime;
@@ -115,6 +118,12 @@ public class AdvertisementDTO implements Serializable {
                         switch (contact.getContactType().getContactTypeName()) { // TODO добавить обработку всех типов контактов
                             case Phone -> {
                                 return String.format(Configuration.AdvertisementDescriptionParts.PHONE_NUMBER, contact.getContactName());
+                            }
+                            case Email -> {
+                                return String.format(Configuration.AdvertisementDescriptionParts.EMAIL, contact.getContactName());
+                            }
+                            case Social -> {
+                                return String.format(Configuration.AdvertisementDescriptionParts.SOCIAL, contact.getContactName());
                             }
                             default -> {
                                 return String.format(Configuration.AdvertisementDescriptionParts.CONTACT, contact.getContactName());

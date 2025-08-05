@@ -3,9 +3,11 @@ package baraholkateam.util;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 
+@Slf4j
 @Getter
 @AllArgsConstructor
 public enum Tag implements Serializable {
@@ -47,9 +49,27 @@ public enum Tag implements Serializable {
     Sport("#спорт"),
     Other("#другое"),
     MenGoods("#мужское"),
-    WomenGoods("#женское");
+    WomenGoods("#женское"),
+
+    // Unknown
+    Unknown("#unknown");
 
     @JsonProperty("name")
     private final String name;
+
+    /**
+     * Возвращает тег по названию тега
+     * @param name название тега
+     * @return тег
+     */
+    public static Tag getTagByName(String name) {
+        for (Tag tag : Tag.values()) {
+            if (tag.getName().equals(name)) {
+                return tag;
+            }
+        }
+        log.error(Configuration.ErrorMessage.NO_TAG_FOUND, name);
+        return Unknown;
+    }
 
 }

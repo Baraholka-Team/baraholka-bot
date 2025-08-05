@@ -1,5 +1,6 @@
 package baraholkateam.rest.mapper;
 
+import baraholkateam.exception.BaraholkaBotException;
 import baraholkateam.rest.dto.TagTypeDTO;
 import baraholkateam.rest.model.TagTypeEntity;
 import baraholkateam.util.TagType;
@@ -19,7 +20,7 @@ public class TagTypeMapper {
     public static TagTypeDTO getTagTypeDTO(TagTypeEntity tagTypeEntity) {
         return TagTypeDTO.builder()
                 .tagTypeId(tagTypeEntity.getTagTypeId())
-                .tagTypeName(TagType.valueOf(tagTypeEntity.getTagTypeName()))
+                .tagTypeName(TagType.getTagTypeByName(tagTypeEntity.getTagTypeName()))
                 .build();
     }
 

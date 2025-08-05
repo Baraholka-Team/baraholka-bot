@@ -4,17 +4,17 @@ import baraholkateam.rest.dto.ContactDTO;
 import baraholkateam.rest.dto.ContactTypeDTO;
 import baraholkateam.rest.mapper.ContactMapper;
 import baraholkateam.rest.repository.ContactRepository;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 /**
  * Сервис для работы с контактами пользователя из объявления
  */
 @Service
+@AllArgsConstructor
 public class ContactService {
 
-    @Autowired
     private ContactRepository contactRepository;
 
     /**

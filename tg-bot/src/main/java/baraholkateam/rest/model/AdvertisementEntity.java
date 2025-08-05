@@ -12,7 +12,6 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,7 +34,7 @@ public class AdvertisementEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "advertisement_sequence")
-    @Column(name = "id", nullable = false)
+    @Column(name = "advertisement_id", nullable = false)
     private Long advertisementId;
 
     @Column(name = "chat_id", nullable = false)
@@ -47,23 +46,25 @@ public class AdvertisementEntity {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @OneToMany(mappedBy = "advertisement", fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "advertisement_advertisement_id")
     private List<PhotoEntity> photos;
 
     @Column(name = "description", length = 1024)
     private String description;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(
             name = "advertisement_tag",
-            joinColumns = { @JoinColumn(name = "advertisement_chat_id"), @JoinColumn(name = "advertisement_message_id") },
+            joinColumns = @JoinColumn(name = "advertisement_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<TagEntity> tags;
 
     @Column(name = "price")
     private Long price;
 
-    @OneToMany(mappedBy = "advertisement", fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "advertisement_advertisement_id")
     private List<ContactEntity> contacts;
 
     @Column(name = "creation_time")

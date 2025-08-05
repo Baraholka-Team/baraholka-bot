@@ -1,5 +1,6 @@
 package baraholkateam.rest.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -27,11 +28,19 @@ public class StateEntity {
     private StateEntityId stateEntityId;
 
     @ManyToOne
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "current_command_id")
     private CommandEntity currentCommand;
 
     @ManyToOne
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "previous_command_id")
     private CommandEntity previousCommand;
+
+    @Column(name = "isFinished")
+    @Builder.Default
+    private Boolean isFinished = false;
+
+    @Column(name = "isRepeat")
+    @Builder.Default
+    private Boolean isRepeat = false;
 
 }

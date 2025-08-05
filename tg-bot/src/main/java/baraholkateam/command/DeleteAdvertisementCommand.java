@@ -6,11 +6,12 @@ import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.bots.AbsSender;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,41 +27,39 @@ public class DeleteAdvertisementCommand extends BaraholkaBotCommand {
     }
 
     @Override
-    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] arguments) {
+    public void executeCommand(TelegramClient telegramClient, User user, Chat chat, Integer messageId, String[] arguments) {
         long chatId = chat.getId();
         List<AdvertisementDTO> ads = advertisementService.getUserAdvertisements(chatId, user.getId());
 
         if (ads == null || ads.isEmpty()) {
-            sendAnswer(absSender, user, chat, Configuration.CommandMessage.NO_ADS_TO_DELETE);
+            sendAnswer(telegramClient, user, chat, Configuration.CommandMessage.NO_ADS_TO_DELETE);
         } else {
             prepareInlineKeyBoardMessage(ads);
-            sendAnswer(absSender, user, chat, Configuration.CommandMessage.USER_ACTUAL_ADS_TEXT, true);
+            sendAnswer(telegramClient, user, chat, Configuration.CommandMessage.USER_ACTUAL_ADS_TEXT, true);
         }
     }
 
     private void prepareInlineKeyBoardMessage(List<AdvertisementDTO> advertisementEntities) {
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
+        List<InlineKeyboardRow> rowList = new ArrayList<>();
 
         advertisementEntities.forEach(advertisement -> {
-            InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
             String description = advertisement.getAdvertisementText();
-            int descIndex = description.indexOf(Configuration.AdvertisementDescriptionParts.DESCRIPTION_TEXT);
-            inlineKeyboardButton.setText(
-                    description
-                            .substring(descIndex + Configuration.AdvertisementDescriptionParts.DESCRIPTION_TEXT.length(),
-                                    descIndex + Configuration.AdvertisementDescriptionParts.DESCRIPTION_TEXT.length() + 40)
-                            .concat("...")
-            );
+            InlineKeyboardButton inlineKeyboardButton = getInlineKeyboardButton(description);
             inlineKeyboardButton.setCallbackData(String.format("%s %d", Configuration.CommandMessage.DELETE_CALLBACK_TEXT, advertisement.getMessageId()));
-            List<InlineKeyboardButton> keyboardButtonsRow = new ArrayList<>();
-            keyboardButtonsRow.add(inlineKeyboardButton);
+            InlineKeyboardRow keyboardButtonsRow = new InlineKeyboardRow(inlineKeyboardButton);
             rowList.add(keyboardButtonsRow);
         });
 
-        inlineKeyboardMarkup.setKeyboard(rowList);
+        replyKeyboard = new InlineKeyboardMarkup(rowList);
+    }
 
-        replyKeyboard = inlineKeyboardMarkup;
+    private static InlineKeyboardButton getInlineKeyboardButton(String description) {
+        int descIndex = description.indexOf(Configuration.AdvertisementDescriptionParts.DESCRIPTION_TEXT);
+        return new InlineKeyboardButton(
+                description
+                        .substring(descIndex + Configuration.AdvertisementDescriptionParts.DESCRIPTION_TEXT.length(),
+                                descIndex + Configuration.AdvertisementDescriptionParts.DESCRIPTION_TEXT.length() + 40)
+                        .concat("..."));
     }
 
 }

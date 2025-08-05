@@ -1,6 +1,5 @@
 package baraholkateam.command;
 
-import baraholkateam.bot.BaraholkaBot;
 import baraholkateam.rest.dto.AdvertisementDTO;
 import baraholkateam.rest.dto.PhotoDTO;
 import baraholkateam.rest.service.AdvertisementService;
@@ -8,22 +7,25 @@ import baraholkateam.telegram_api_requests.TelegramAPIRequests;
 import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
 import baraholkateam.util.PhotoConverter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Chat;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.PhotoSize;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.api.objects.photo.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.bots.AbsSender;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class NewAdvertisementAddPhotosCommand extends BaraholkaBotCommand {
 
@@ -37,10 +39,10 @@ public class NewAdvertisementAddPhotosCommand extends BaraholkaBotCommand {
     }
 
     @Override
-    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) {
+    public void executeCommand(TelegramClient telegramClient, User user, Chat chat, Integer messageId, String[] arguments) {
         prepareReplyKeyboard(Collections.emptyList(), true);
         sendAnswer(
-                absSender,
+                telegramClient,
                 user,
                 chat,
                 Configuration.CommandMessage.ADD_PHOTOS_TEXT,
@@ -49,7 +51,7 @@ public class NewAdvertisementAddPhotosCommand extends BaraholkaBotCommand {
     }
 
     @Override
-    public TextProcessResult processUserInput(AbsSender absSender, Message message) {
+    public TextProcessResult processUserInput(TelegramClient telegramClient, Message message) {
         Long chatId = message.getChatId();
         Long userId = message.getFrom().getId();
         AdvertisementDTO advertisementDTO = advertisementService.getLastUserAdvertisement(chatId, userId);
@@ -74,22 +76,29 @@ public class NewAdvertisementAddPhotosCommand extends BaraholkaBotCommand {
         photos.forEach((make, photo) -> {
             if (canAddPhotosCount.getAndDecrement() <= 0) {
                 sendAnswer(
-                        absSender,
+                        telegramClient,
                         message.getFrom(),
                         message.getChat(),
                         Configuration.CommandMessage.NO_MORE_PHOTOS_ADD
                 );
                 return;
             }
-            String photoString = PhotoConverter.convertPhotoToBase64String(
-                    ((BaraholkaBot) absSender).downloadFileByFilePath(
-                            telegramAPIRequests.getFilePath(photo.last().getFileId())
-                    )
-            );
-            PhotoDTO photoDTO = PhotoDTO.builder()
-                    .photo(photoString)
-                    .build();
-            advertisementDTO.addPhoto(photoDTO);
+            File photoFile = null;
+            try {
+                photoFile = telegramClient.downloadFile(telegramAPIRequests.getFilePath(photo.last().getFileId()));
+            } catch (TelegramApiException e) {
+                log.error(
+                        "Невозможно скачать файл по пути %s".formatted(photo.last().getFilePath()),
+                        e
+                );
+            }
+            if (photoFile != null) {
+                String photoString = PhotoConverter.convertPhotoToBase64String(photoFile);
+                PhotoDTO photoDTO = PhotoDTO.builder()
+                        .photo(photoString)
+                        .build();
+                advertisementDTO.addPhoto(photoDTO);
+            }
         });
 
         advertisementService.saveNewAdvertisement(advertisementDTO);

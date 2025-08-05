@@ -1,5 +1,6 @@
 package baraholkateam.rest.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,18 +29,17 @@ public class ContactEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "contact_sequence")
-    @Column(name = "id", nullable = false)
+    @Column(name = "contact_id", nullable = false)
     private Long contactId;
 
     @ManyToOne
-    @JoinColumn(name = "id", nullable = false)
+    @JoinColumn(name = "contact_type_id", nullable = false)
     private ContactTypeEntity contactType;
 
     @Column(name = "name", length = 64, nullable = false)
     private String contactName;
 
-    @ManyToOne
-    @JoinColumn(name = "id")
+    @ManyToOne(cascade = CascadeType.ALL)
     private AdvertisementEntity advertisement;
 
 }

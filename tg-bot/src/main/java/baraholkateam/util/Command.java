@@ -1,10 +1,12 @@
 package baraholkateam.util;
 
+import baraholkateam.exception.BaraholkaBotException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 @Getter
 @AllArgsConstructor
@@ -41,5 +43,20 @@ public enum Command implements Serializable {
     private final String name;
     @JsonProperty("description")
     private final String description;
+
+    /**
+     * Возвращает команду по её названию
+     * @param name название команды
+     * @return команду, если такая команда существует, иначе бросает {@link BaraholkaBotException}
+     * @throws BaraholkaBotException если команды с переданным названием не существует
+     */
+    public static Command findCommand(String name) throws BaraholkaBotException {
+        for (Command command : Command.values()) {
+            if (Objects.equals(command.getName(), name)) {
+                return command;
+            }
+        }
+        throw new BaraholkaBotException(Configuration.ErrorMessage.NO_COMMAND_WITH_NAME.formatted(name));
+    }
 
 }

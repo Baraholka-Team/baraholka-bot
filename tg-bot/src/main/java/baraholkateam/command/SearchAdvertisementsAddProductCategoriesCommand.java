@@ -11,9 +11,9 @@ import baraholkateam.util.Tag;
 import baraholkateam.util.TagType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.bots.AbsSender;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.stream.Collectors;
 
@@ -31,7 +31,7 @@ public class SearchAdvertisementsAddProductCategoriesCommand extends BaraholkaBo
     }
 
     @Override
-    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] arguments) throws BaraholkaBotException {
+    public void executeCommand(TelegramClient telegramClient, User user, Chat chat, Integer messageId, String[] arguments) throws BaraholkaBotException {
         ChosenTagsDTO tags = chosenTagsService.getChosenTags(chat.getId(), user.getId());
         Command previousCommand = stateService.getState(chat.getId(), user.getId()).getPreviousCommand().getCommand();
         if (previousCommand != null && previousCommand.equals(Command.SearchAdvertisements_AddAdvertisementTypes)) {
@@ -45,7 +45,7 @@ public class SearchAdvertisementsAddProductCategoriesCommand extends BaraholkaBo
 
             prepareNextButton();
             sendAnswer(
-                    absSender,
+                    telegramClient,
                     user,
                     chat,
                     String.format(Configuration.CommandMessage.CHOSEN_HASHTAGS, hashtags),
@@ -54,7 +54,7 @@ public class SearchAdvertisementsAddProductCategoriesCommand extends BaraholkaBo
 
             prepareTags(TagType.ProductCategories, true);
             sendAnswer(
-                    absSender,
+                    telegramClient,
                     user,
                     chat,
                     String.format(Configuration.CommandMessage.CHOOSE_PRODUCT_CATEGORY, Configuration.Buttons.NEXT_BUTTON),
@@ -62,7 +62,7 @@ public class SearchAdvertisementsAddProductCategoriesCommand extends BaraholkaBo
             );
         } else {
             sendAnswer(
-                    absSender,
+                    telegramClient,
                     user,
                     chat,
                     String.format(Configuration.CommandMessage.INCORRECT_PREVIOUS_STATE, Command.MainMenu.getName())

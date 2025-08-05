@@ -31,11 +31,11 @@ public class TagEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tag_sequence")
-    @Column(name = "id", nullable = false)
+    @Column(name = "tag_id", nullable = false)
     private Long tagId;
 
     @ManyToOne
-    @JoinColumn(name = "id", nullable = false)
+    @JoinColumn(name = "tag_type_id", nullable = false)
     private TagTypeEntity tagType;
 
     @Column(name = "name", unique = true, length = 64, nullable = false)

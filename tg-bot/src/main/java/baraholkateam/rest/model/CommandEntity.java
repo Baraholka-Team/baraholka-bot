@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,7 +30,7 @@ public class CommandEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "command_sequence")
-    @Column(name = "id", nullable = false)
+    @Column(name = "command_id", nullable = false)
     private Long commandId;
 
     @Column(name = "name", unique = true, length = 64, nullable = false)
@@ -43,5 +44,11 @@ public class CommandEntity {
 
     @OneToMany(mappedBy = "previousCommand")
     private List<StateEntity> previousStates;
+
+    @OneToOne(mappedBy = "currentCommand")
+    private CommandOrderEntity currentCommandOrder;
+
+    @OneToMany(mappedBy = "nextCommand")
+    private List<CommandOrderEntity> nextCommandOrders;
 
 }

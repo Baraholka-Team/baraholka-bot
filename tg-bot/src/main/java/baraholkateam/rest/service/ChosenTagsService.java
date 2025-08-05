@@ -5,8 +5,8 @@ import baraholkateam.rest.dto.TagDTO;
 import baraholkateam.rest.mapper.ChosenTagsMapper;
 import baraholkateam.rest.model.ChosenTagsEntityId;
 import baraholkateam.rest.repository.ChosenTagsRepository;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,9 +15,9 @@ import java.util.List;
  * Сервис взаимодействия с выбранными пользователем тегами во время поиска объявлений по тегам
  */
 @Service
+@AllArgsConstructor
 public class ChosenTagsService {
 
-    @Autowired
     private ChosenTagsRepository chosenTagsRepository;
 
     /**

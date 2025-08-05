@@ -1,11 +1,11 @@
 package baraholkateam.rest.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -29,15 +29,14 @@ public class PhotoEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "photo_sequence")
-    @Column(name = "id", nullable = false)
+    @Column(name = "photo_id", nullable = false)
     private Long photoId;
 
     @Lob
     @Column(name = "photo", length = Integer.MAX_VALUE, nullable = false)
     private String photo;
 
-    @ManyToOne
-    @JoinColumn(name = "id")
+    @ManyToOne(cascade = CascadeType.ALL)
     private AdvertisementEntity advertisement;
 
 }

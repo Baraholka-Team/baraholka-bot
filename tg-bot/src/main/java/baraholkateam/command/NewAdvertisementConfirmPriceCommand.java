@@ -5,9 +5,9 @@ import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.bots.AbsSender;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.List;
 
@@ -23,10 +23,10 @@ public class NewAdvertisementConfirmPriceCommand extends BaraholkaBotCommand {
     }
 
     @Override
-    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) {
+    public void executeCommand(TelegramClient telegramClient, User user, Chat chat, Integer messageId, String[] arguments) {
         prepareReplyKeyboard(List.of(Command.NewAdvertisement_AddContacts.getDescription()), true);
         sendAnswer(
-                absSender,
+                telegramClient,
                 user,
                 chat,
                 String.format(Configuration.CommandMessage.CONFIRM_PRICE_TEXT, advertisementService.getLastUserAdvertisement(chat.getId(), user.getId()).getPrice()),

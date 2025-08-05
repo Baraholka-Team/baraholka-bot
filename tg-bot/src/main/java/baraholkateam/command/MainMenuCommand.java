@@ -3,9 +3,9 @@ package baraholkateam.command;
 import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.bots.AbsSender;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.List;
 
@@ -17,10 +17,10 @@ public class MainMenuCommand extends BaraholkaBotCommand {
     }
 
     @Override
-    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) {
+    public void executeCommand(TelegramClient telegramClient, User user, Chat chat, Integer messageId, String[] arguments) {
         prepareButtons();
         sendAnswer(
-                absSender,
+                telegramClient,
                 user,
                 chat,
                 String.format(Configuration.CommandMessage.MAIN_MENU,
@@ -35,7 +35,7 @@ public class MainMenuCommand extends BaraholkaBotCommand {
     }
 
     private void prepareButtons() {
-        replyKeyboard = prepareReplyKeyboard(List.of(
+        prepareReplyKeyboard(List.of(
                 Command.NewAdvertisement.getDescription(),
                 Command.DeleteAdvertisement.getDescription(),
                 Command.SearchAdvertisements.getDescription(),

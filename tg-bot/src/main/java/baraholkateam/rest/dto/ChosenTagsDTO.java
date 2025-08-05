@@ -26,6 +26,7 @@ public class ChosenTagsDTO implements Serializable {
     @JsonProperty("user_id")
     private Long userId;
     @JsonProperty("tags")
+    @Builder.Default
     private List<TagDTO> tags = new ArrayList<>();
 
     public void addTag(TagDTO tag) {

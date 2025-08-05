@@ -1,5 +1,6 @@
 package baraholkateam.command;
 
+import baraholkateam.configuration.AdvertisementConfiguration;
 import baraholkateam.rest.dto.AdvertisementDTO;
 import baraholkateam.rest.dto.ContactDTO;
 import baraholkateam.rest.dto.ContactTypeDTO;
@@ -10,10 +11,10 @@ import baraholkateam.util.ContactType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Chat;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.bots.AbsSender;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.Collections;
 
@@ -22,18 +23,18 @@ public class NewAdvertisementAddSocialCommand extends BaraholkaBotCommand {
 
     @Autowired
     private AdvertisementService advertisementService;
-    @Value("${advertisement.social.regexp}")
-    private String socialRegularExpression;
+    @Autowired
+    private AdvertisementConfiguration advertisementConfiguration;
 
     public NewAdvertisementAddSocialCommand() {
         super(Command.NewAdvertisement_AddSocial.getName(), Command.NewAdvertisement_AddSocial.getDescription());
     }
 
     @Override
-    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) {
+    public void executeCommand(TelegramClient telegramClient, User user, Chat chat, Integer messageId, String[] arguments) {
         prepareReplyKeyboard(Collections.emptyList(), true);
         sendAnswer(
-                absSender,
+                telegramClient,
                 user,
                 chat,
                 Configuration.CommandMessage.ADD_SOCIAL_TEXT,
@@ -42,9 +43,9 @@ public class NewAdvertisementAddSocialCommand extends BaraholkaBotCommand {
     }
 
     @Override
-    public TextProcessResult processUserInput(AbsSender absSender, Message message) {
+    public TextProcessResult processUserInput(TelegramClient telegramClient, Message message) {
         String text = message.getText();
-        if (!text.matches(socialRegularExpression)) {
+        if (!text.matches(advertisementConfiguration.getSocial())) {
             return new TextProcessResult(true, Configuration.CommandMessage.CONTACT_NOT_VALID);
         }
         Long chatId = message.getChatId();

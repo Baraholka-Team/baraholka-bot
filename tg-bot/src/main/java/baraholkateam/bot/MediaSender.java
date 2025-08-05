@@ -1,6 +1,6 @@
 package baraholkateam.bot;
 
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.io.File;
 import java.util.List;

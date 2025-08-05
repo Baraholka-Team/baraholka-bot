@@ -6,7 +6,9 @@ import baraholkateam.rest.model.ContactEntity;
 import baraholkateam.rest.model.ContactTypeEntity;
 import baraholkateam.util.ContactType;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Маппер бизнес сущности контактов пользователя из объявления и JPA сущности
@@ -42,13 +44,13 @@ public class ContactMapper {
     public static List<ContactEntity> getContactEntityList(List<ContactDTO> contactDTOList) {
         return contactDTOList.stream()
                 .map(ContactMapper::getContactEntity)
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public static List<ContactDTO> getContactDTOList(List<ContactEntity> contactEntityList) {
         return contactEntityList.stream()
                 .map(ContactMapper::getContactDTO)
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
 }

@@ -10,15 +10,18 @@ import baraholkateam.util.Configuration;
 import baraholkateam.util.ContactType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.bots.AbsSender;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class NewAdvertisementConfirmPhoneCommand extends BaraholkaBotCommand {
@@ -33,7 +36,19 @@ public class NewAdvertisementConfirmPhoneCommand extends BaraholkaBotCommand {
     }
 
     @Override
-    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) throws BaraholkaBotException {
+    public void processReplyKeyboardCommandText(TelegramClient telegramClient, Message message) {
+        Long chatId = message.getChatId();
+        Long userId = message.getFrom().getId();
+        if (message.hasText() && Objects.equals(message.getText(), Configuration.CommandMessage.DELETE_ALL_SOCIALS)) {
+            AdvertisementDTO advertisementDTO = advertisementService.getLastUserAdvertisement(chatId, userId);
+            advertisementDTO.setContacts(new ArrayList<>());
+            advertisementService.saveNewAdvertisement(advertisementDTO);
+            sendAnswer(telegramClient, message.getFrom(), message.getChat(), Configuration.CommandMessage.SOCIALS_DELETE);
+        }
+    }
+
+    @Override
+    public void executeCommand(TelegramClient telegramClient, User user, Chat chat, Integer messageId, String[] arguments) throws BaraholkaBotException {
         AdvertisementDTO advertisementDTO = advertisementService.getLastUserAdvertisement(chat.getId(), user.getId());
         ContactDTO phone = advertisementDTO.getContacts().stream()
                 .filter(contactDTO -> contactDTO.getContactType().getContactTypeName().equals(ContactType.Phone))
@@ -44,7 +59,7 @@ public class NewAdvertisementConfirmPhoneCommand extends BaraholkaBotCommand {
         if (phone != null && previousCommand != null && !previousCommand.equals(Command.NewAdvertisement_AddSocial)) {
             prepareReplyKeyboard(Collections.emptyList(), true);
             sendAnswer(
-                    absSender,
+                    telegramClient,
                     user,
                     chat,
                     String.format(Configuration.CommandMessage.PHONE_TEXT, phone),
@@ -53,7 +68,7 @@ public class NewAdvertisementConfirmPhoneCommand extends BaraholkaBotCommand {
         } else if (!socials.isEmpty()) {
             prepareReplyKeyboard(List.of(Configuration.CommandMessage.DELETE_ALL_SOCIALS), true);
             sendAnswer(
-                    absSender,
+                    telegramClient,
                     user,
                     chat,
                     String.format(Configuration.CommandMessage.SOCIAL_TEXT, socials.get(socials.size() - 1)),
@@ -63,7 +78,7 @@ public class NewAdvertisementConfirmPhoneCommand extends BaraholkaBotCommand {
 
         prepareAddSocial();
         sendAnswer(
-                absSender,
+                telegramClient,
                 user,
                 chat,
                 Configuration.CommandMessage.CONFIRM_PHONE_TEXT,
@@ -72,27 +87,22 @@ public class NewAdvertisementConfirmPhoneCommand extends BaraholkaBotCommand {
     }
 
     private void prepareAddSocial() {
-        InlineKeyboardButton yesButton = new InlineKeyboardButton();
-        yesButton.setText("Да");
+        InlineKeyboardButton yesButton = new InlineKeyboardButton("Да");
         String yesCallbackData = String.format("%s %s", Configuration.CommandMessage.SOCIAL_CALLBACK_DATA, "yes");
         yesButton.setCallbackData(yesCallbackData);
 
-        InlineKeyboardButton noButton = new InlineKeyboardButton();
-        noButton.setText("Нет");
+        InlineKeyboardButton noButton = new InlineKeyboardButton("Нет");
         String noCallbackData = String.format("%s %s", Configuration.CommandMessage.SOCIAL_CALLBACK_DATA, "no");
         noButton.setCallbackData(noCallbackData);
 
-        List<InlineKeyboardButton> keyboardFirstRow = new ArrayList<>();
+        InlineKeyboardRow keyboardFirstRow = new InlineKeyboardRow();
         keyboardFirstRow.add(yesButton);
         keyboardFirstRow.add(noButton);
 
-        List<List<InlineKeyboardButton>> keyboardRows = new ArrayList<>();
+        List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
         keyboardRows.add(keyboardFirstRow);
 
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        inlineKeyboardMarkup.setKeyboard(keyboardRows);
-
-        replyKeyboard = inlineKeyboardMarkup;
+        replyKeyboard = new InlineKeyboardMarkup(keyboardRows);
     }
 
 }

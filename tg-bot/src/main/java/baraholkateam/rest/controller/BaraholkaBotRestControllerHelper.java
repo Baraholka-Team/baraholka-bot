@@ -1,23 +1,33 @@
 package baraholkateam.rest.controller;
 
-import baraholkateam.bot.BaraholkaBot;
-import baraholkateam.command.NewAdvertisementConfirmCommand;
-import baraholkateam.rest.model.AdvertisementEntity;
+import baraholkateam.configuration.BaraholkaBotConfiguration;
+import baraholkateam.rest.dto.AdvertisementDTO;
+import baraholkateam.rest.dto.ContactDTO;
+import baraholkateam.rest.dto.PhotoDTO;
+import baraholkateam.rest.dto.TagDTO;
 import baraholkateam.rest.service.AdvertisementService;
+import baraholkateam.rest.service.ContactService;
+import baraholkateam.rest.service.ContactTypeService;
+import baraholkateam.rest.service.TagService;
 import baraholkateam.telegram_api_requests.TelegramAPIRequests;
 import baraholkateam.util.Configuration;
+import baraholkateam.util.ContactType;
 import baraholkateam.util.Tag;
 import baraholkateam.util.TelegramUserInfo;
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Hex;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.bouncycastle.util.encoders.Hex;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageCaption;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
+import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -29,47 +39,41 @@ import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-import static baraholkateam.notification.NotificationExecutor.FIRST_REPEAT_NOTIFICATION_PERIOD;
-import static baraholkateam.notification.NotificationExecutor.FIRST_REPEAT_NOTIFICATION_TIME_UNIT;
-
 @Slf4j
 @Component
+@AllArgsConstructor
 public class BaraholkaBotRestControllerHelper {
 
-    @Autowired
+    private ContactService contactService;
+    private ContactTypeService contactTypeService;
+    private TagService tagService;
     private TelegramAPIRequests telegramAPIRequests;
-    @Autowired
     private AdvertisementService advertisementService;
-    @Autowired
-    private NewAdvertisementConfirmCommand newAdvertisementConfirmCommand;
-    @Autowired
-    private BaraholkaBot baraholkaBot;
-    @Value("${bot.token}")
-    private String botToken;
-    @Value("${channel.chat_id}")
-    private String channelChatId;
+    private BaraholkaBotConfiguration baraholkaBotConfiguration;
+    private TelegramClient telegramClient;
 
     boolean checkUserRights(TelegramUserInfo userInfo) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] secretKeyBytes = md.digest(botToken.getBytes(StandardCharsets.UTF_8));
+            byte[] secretKeyBytes = md.digest(baraholkaBotConfiguration.getToken().getBytes(StandardCharsets.UTF_8));
             Mac sha256HMAC = Mac.getInstance("HmacSHA256");
             SecretKeySpec secretKey = new SecretKeySpec(secretKeyBytes, "HmacSHA256");
             sha256HMAC.init(secretKey);
 
-            String calculatedHash = Hex.encodeHexString(sha256HMAC.doFinal(
+            byte[] calculatedHash = Hex.encode(sha256HMAC.doFinal(
                     userInfo
                             .getCheckString()
                             .getBytes(StandardCharsets.UTF_8)
             ));
 
-            return calculatedHash.equals(userInfo.hash());
+            return Arrays.equals(calculatedHash, userInfo.hash());
         } catch (NoSuchAlgorithmException e) {
             log.error("No such algorithm", e);
             return false;
@@ -79,8 +83,8 @@ public class BaraholkaBotRestControllerHelper {
         }
     }
 
-    boolean checkIsUserChannelMember(Long userId) {
-        String userRole = telegramAPIRequests.getUserRole(userId);
+    boolean checkIsUserChannelMember(Long chatId, Long userId) {
+        String userRole = telegramAPIRequests.getUserRole(chatId, userId);
         return Objects.equals(userRole, "creator")
                 || Objects.equals(userRole, "administrator")
                 || Objects.equals(userRole, "member");
@@ -93,26 +97,45 @@ public class BaraholkaBotRestControllerHelper {
         String username = json.get("username").asText();
         String photoUrl = json.get("photo_url").asText();
         Integer authDate = Integer.parseInt(json.get("auth_date").asText());
-        String hash = json.get("hash").asText();
+        byte[] hash;
+        try {
+            hash = json.get("hash").binaryValue();
+        } catch (IOException e) {
+            log.error("Error parsing hash", e);
+            return null;
+        }
 
         return new TelegramUserInfo(userId, firstName, lastName, username, photoUrl,
                 authDate, hash);
     }
 
-    AdvertisementEntity getAdvertisement(JsonNode json) {
+    AdvertisementDTO getAdvertisement(JsonNode json) {
         Iterator<JsonNode> tagNodeIterator = json.withArray("tags").elements();
-        List<Tag> tags = new ArrayList<>();
+        List<TagDTO> tags = new ArrayList<>();
         while (tagNodeIterator.hasNext()) {
-            tags.add(Tag.getTagByName(tagNodeIterator.next().asText()));
+            tags.add(tagService.getTagByName(tagNodeIterator.next().asText()));
         }
         String phone = json.get("phone").asText();
         if (Objects.equals(phone, "null")) {
             phone = null;
         }
         Iterator<JsonNode> contactsNodeIterator = json.withArray("contacts").elements();
-        List<String> contacts = new ArrayList<>();
+        List<ContactDTO> contactDTOList = new ArrayList<>();
         while (contactsNodeIterator.hasNext()) {
-            contacts.add(contactsNodeIterator.next().asText());
+            contactDTOList.add(
+                    ContactDTO.builder()
+                            .contactType(contactTypeService.getContactTypeByName(ContactType.Social.getName()))
+                            .contactName(contactsNodeIterator.next().asText())
+                            .build()
+            );
+        }
+        if (phone != null) {
+            contactDTOList.add(
+                    ContactDTO.builder()
+                            .contactName(phone)
+                            .contactType(contactTypeService.getContactTypeByName(ContactType.Phone.getName()))
+                            .build()
+        );
         }
         Long userId = Long.parseLong(json.get("id").asText());
         String description = json.get("description").asText();
@@ -122,7 +145,13 @@ public class BaraholkaBotRestControllerHelper {
             price = Long.parseLong(priceString);
         }
 
-        return new AdvertisementEntity(userId, description, tags, price, phone, contacts);
+        return AdvertisementDTO.builder()
+                .userId(userId)
+                .description(description)
+                .tags(tags)
+                .price(price)
+                .contacts(contactDTOList)
+                .build();
     }
 
     List<String> getTagsList(JsonNode json) {
@@ -134,69 +163,86 @@ public class BaraholkaBotRestControllerHelper {
         return tagsList;
     }
 
-    boolean addNewAdvertisement(AdvertisementEntity advertisementEntity, JsonNode json) {
-        if (advertisementEntity.getContactEntities().isEmpty() && advertisementEntity.getPhone() == null) {
-            advertisementEntity.addContacts(List.of("@"
-                    + telegramAPIRequests.getUser(advertisementEntity.getChatId()).username()));
+    boolean addNewAdvertisement(AdvertisementDTO advertisementDTO, JsonNode json) {
+        if (advertisementDTO.getContacts().isEmpty()) {
+            contactService.addContact(
+                    ContactDTO.builder()
+                            .contactType(contactTypeService.getContactTypeByName(ContactType.Social.getName()))
+                            .contactName("@" + telegramAPIRequests.getUser(advertisementDTO.getChatId(), advertisementDTO.getUserId()).username())
+                            .build()
+            );
         }
 
-        advertisementService.put(advertisementEntity);
+        advertisementService.saveNewAdvertisement(advertisementDTO);
 
         Iterator<JsonNode> photosNodeIterator = json.withArray("photos").elements();
-        List<String> photos = new ArrayList<>();
+        List<PhotoDTO> photoDTOList = new ArrayList<>();
         while (photosNodeIterator.hasNext()) {
-            photos.add(photosNodeIterator.next().asText());
+            photoDTOList.add(
+                    PhotoDTO.builder()
+                            .photo(photosNodeIterator.next().asText())
+                            .build()
+            );
         }
 
         Message sentAd;
-        if (photos.size() == 1) {
+        if (photoDTOList.size() == 1) {
             try {
                 File photoFile = File.createTempFile("photo", "temp");
-                Files.write(Path.of(photoFile.getPath()), Base64.getDecoder().decode(photos.get(0)));
-                sentAd = baraholkaBot.sendPhotoMessage(
-                        Long.parseLong(channelChatId),
-                        photoFile,
-                        advertisementService.getAdvertisementText(advertisementEntity.getChatId())
+                Files.write(Path.of(photoFile.getPath()), Base64.getDecoder().decode(photoDTOList.get(0).getPhoto()));
+                sentAd = telegramClient.execute(
+                        SendPhoto.builder()
+                                .chatId(advertisementDTO.getChatId())
+                                .photo(new InputFile(photoFile))
+                                .caption(advertisementService.getLastUserAdvertisement(advertisementDTO.getChatId(), advertisementDTO.getUserId()).getAdvertisementText())
+                                .build()
                 );
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.error("Cannot send photo", e);
                 return false;
             }
         } else {
             List<File> photoFiles = new ArrayList<>();
 
-            for (String fileString : photos) {
+            for (PhotoDTO photoDTO : photoDTOList) {
                 try {
                     File file = File.createTempFile("photo", "temp");
-                    Files.write(Path.of(file.getPath()), Base64.getDecoder().decode(fileString));
+                    Files.write(Path.of(file.getPath()), Base64.getDecoder().decode(photoDTO.getPhoto()));
                     photoFiles.add(file);
                 } catch (IOException e) {
-                    log.error("Cannot send photos", e);
+                    log.error("Cannot send photo", e);
                     return false;
                 }
             }
 
-            List<Message> messages = baraholkaBot.sendPhotoMediaGroup(
-                    Long.parseLong(channelChatId),
-                    photoFiles,
-                    advertisementService.getAdvertisementText(advertisementEntity.getChatId())
-            );
+            SendMediaGroup mediaGroup = SendMediaGroup.builder()
+                    .chatId(advertisementDTO.getChatId())
+                    .medias(photoFiles.stream().map(photoFile -> new InputMediaPhoto(photoFile, photoFile.getName())).toList())
+                    .build();
+
+            mediaGroup.getMedias().get(0).setCaption(advertisementService.getLastUserAdvertisement(advertisementDTO.getChatId(), advertisementDTO.getUserId()).getAdvertisementText());
+            List<Message> messages;
+            try {
+                messages = telegramClient.execute(mediaGroup);
+            } catch (TelegramApiException e) {
+                log.error("Cannot send P", e);
+                return false;
+            }
             sentAd = messages.get(0);
         }
 
         if (sentAd != null) {
-            advertisementEntity
-                    .setMessageId(Long.parseLong(String.valueOf(sentAd.getMessageId())))
-                    .setPhotos(photos)
-                    .setCreationTime(System.currentTimeMillis())
-                    .setNextUpdateTime(
-                            System.currentTimeMillis()
-                                    + FIRST_REPEAT_NOTIFICATION_TIME_UNIT
-                                    .toMillis(FIRST_REPEAT_NOTIFICATION_PERIOD)
-                    )
-                    .setUpdateAttempt(0);
-            advertisementService.put(advertisementEntity);
-            advertisementService.saveNewAdvertisement(advertisementEntity);
+            advertisementDTO.setMessageId(sentAd.getMessageId());
+            advertisementDTO.setPhotos(photoDTOList);
+//                    .setCreationTime(System.currentTimeMillis())
+//                    .setNextUpdateTime(
+//                            System.currentTimeMillis()
+//                                    + FIRST_REPEAT_NOTIFICATION_TIME_UNIT
+//                                    .toMillis(FIRST_REPEAT_NOTIFICATION_PERIOD)
+//                    )
+//                    .setUpdateAttempt(0)
+            ;
+            advertisementService.saveNewAdvertisement(advertisementDTO);
 
             return true;
         }
@@ -204,21 +250,21 @@ public class BaraholkaBotRestControllerHelper {
         return false;
     }
 
-    void deleteMessage(Integer messageId) throws TelegramApiException {
+    void deleteMessage(Long chatId, Long userId, Integer messageId) throws TelegramApiException {
         EditMessageCaption editMessage = new EditMessageCaption();
-        String adText = advertisementService.adText(messageId)
+        String adText = advertisementService.getLastUserAdvertisement(chatId, userId).getAdvertisementText()
                 .substring(Tag.Actual.getName().length() + 1);
         String editedText = String.format("%s\n\n%s", Configuration.CommandMessage.NOT_ACTUAL_TEXT, adText);
-        editMessage.setChatId(channelChatId);
+        editMessage.setChatId(chatId);
         editMessage.setMessageId(Integer.parseInt(String.valueOf(messageId)));
         editMessage.setParseMode(ParseMode.HTML);
         editMessage.setCaption(editedText);
 
-        baraholkaBot.execute(editMessage);
+        telegramClient.execute(editMessage);
     }
 
-    boolean isUserMessageOwner(Long userId, Integer messageId) {
-        AdvertisementEntity advertisementEntity = advertisementService.get(messageId);
-        return advertisementEntity != null && Objects.equals(advertisementEntity.getOwnerChatId(), userId);
+    boolean isUserMessageOwner(Long chatId, Long userId) {
+        AdvertisementDTO advertisementDTO = advertisementService.getLastUserAdvertisement(chatId, userId);
+        return advertisementDTO != null && Objects.equals(advertisementDTO.getUserId(), userId);
     }
 }

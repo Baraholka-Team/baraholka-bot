@@ -5,8 +5,8 @@ import baraholkateam.rest.dto.TagTypeDTO;
 import baraholkateam.rest.mapper.TagMapper;
 import baraholkateam.rest.mapper.TagTypeMapper;
 import baraholkateam.rest.repository.TagRepository;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,9 +15,9 @@ import java.util.List;
  * Сервис для работы с тегами в объявлении
  */
 @Service
+@AllArgsConstructor
 public class TagService {
 
-    @Autowired
     private TagRepository tagRepository;
 
     /**

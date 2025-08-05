@@ -1,14 +1,14 @@
 package baraholkateam.rest.service;
 
+import baraholkateam.configuration.AdvertisementConfiguration;
 import baraholkateam.rest.dto.AdvertisementDTO;
 import baraholkateam.rest.dto.TagDTO;
 import baraholkateam.rest.mapper.AdvertisementMapper;
 import baraholkateam.rest.mapper.TagMapper;
-import baraholkateam.rest.model.AdvertisementEntity;
 import baraholkateam.rest.repository.AdvertisementRepository;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -18,12 +18,11 @@ import java.util.List;
  * Сервис взаимодействия с объявлениями пользователей
  */
 @Service
+@AllArgsConstructor
 public class AdvertisementService {
 
-    @Autowired
     private AdvertisementRepository advertisementRepository;
-    @Value("${search_advertisement_limit}")
-    private Integer searchAdvertisementsLimit;
+    private AdvertisementConfiguration advertisementConfiguration;
 
     /**
      * Получает все объявления пользователя из чата
@@ -31,6 +30,7 @@ public class AdvertisementService {
      * @param userId id пользователя
      * @return все объявления пользователя
      */
+    @Transactional
     public List<AdvertisementDTO> getUserAdvertisements(@NotNull Long chatId, @NotNull Long userId) {
         return advertisementRepository.findAllByChatIdAndUserId(chatId, userId).stream()
                 .map(AdvertisementMapper::getAdvertisementDTO)
@@ -43,6 +43,7 @@ public class AdvertisementService {
      * @param userId id пользователя
      * @return последнее объявление пользователя или null, если пользователь не создал ни одного объявления
      */
+    @Transactional
     public AdvertisementDTO getLastUserAdvertisement(@NotNull Long chatId, @NotNull Long userId) {
         return getUserAdvertisements(chatId, userId).stream()
                 .max(Comparator.comparingLong(AdvertisementDTO::getCreationTime))
@@ -72,8 +73,11 @@ public class AdvertisementService {
      * @param timestamp метка времени от 01.01.1970 в мс, начиная с которой объявление считается помеченным к удалению
      * @return список помеченных к удалению объявлений
      */
-    public List<AdvertisementEntity> getMarkedForDeleteAdvertisements(@NotNull Long timestamp) {
-        return advertisementRepository.findAllByNextUpdateTimeLessThanEqual(timestamp);
+    @Transactional
+    public List<AdvertisementDTO> getMarkedForDeleteAdvertisements(@NotNull Long timestamp) {
+        return advertisementRepository.findAllByNextUpdateTimeLessThanEqual(timestamp).stream()
+                .map(AdvertisementMapper::getAdvertisementDTO)
+                .toList();
     }
 
     /**
@@ -81,8 +85,11 @@ public class AdvertisementService {
      * @param tags список тегов, которые должны присутствовать в объявлении
      * @return список объявлений, содержащих указанные теги
      */
-    public List<AdvertisementEntity> searchAdvertisementsWithTags(@NotNull List<TagDTO> tags) {
-        return advertisementRepository.findAllByTagsIn(TagMapper.getTagEntityList(tags), searchAdvertisementsLimit);
+    @Transactional
+    public List<AdvertisementDTO> searchAdvertisementsWithTags(@NotNull List<TagDTO> tags) {
+        return advertisementRepository.findAllByTagsIn(TagMapper.getTagEntityList(tags), advertisementConfiguration.getSearchAdvertisementLimit()).stream()
+                .map(AdvertisementMapper::getAdvertisementDTO)
+                .toList();
     }
 
 }

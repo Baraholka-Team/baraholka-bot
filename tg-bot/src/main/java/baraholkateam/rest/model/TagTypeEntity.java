@@ -29,7 +29,7 @@ public class TagTypeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tag_type_sequence")
-    @Column(name = "id", nullable = false)
+    @Column(name = "tag_type_id", nullable = false)
     private Long tagTypeId;
 
     @Column(name = "name", unique = true, length = 64, nullable = false)

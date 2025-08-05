@@ -1,14 +1,14 @@
 package baraholkateam.bot;
 
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import java.util.List;
 
 public interface MessageEditor {
 
-    void editAdvertisementText(Long chatId, Integer messageId, String text);
+    void editAdvertisementText(Long chatId, Long userId, String text);
 
-    void editMessageReplyMarkup(Long chatId, List<List<InlineKeyboardButton>> buttons);
+    void editMessageReplyMarkup(Long chatId, Long userId, List<InlineKeyboardRow> buttons);
 
     void deleteLastMessage(Long chatId, Long userId);
 

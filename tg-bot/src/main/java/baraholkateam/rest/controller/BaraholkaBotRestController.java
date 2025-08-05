@@ -1,7 +1,10 @@
 package baraholkateam.rest.controller;
 
-import baraholkateam.rest.model.AdvertisementEntity;
+import baraholkateam.rest.dto.AdvertisementDTO;
+import baraholkateam.rest.dto.TagDTO;
 import baraholkateam.rest.service.AdvertisementService;
+import baraholkateam.rest.service.TagService;
+import baraholkateam.util.Tag;
 import baraholkateam.util.TelegramUserInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +32,13 @@ public class BaraholkaBotRestController {
 
     @Autowired
     private AdvertisementService advertisementService;
+    @Autowired
+    private TagService tagService;
 
-    @RequestMapping(method = RequestMethod.POST, value = "/my_advertisements",
+    @RequestMapping(method = RequestMethod.POST, value = "/my_advertisements/{chat_id}",
             headers = {"content-type=application/json"})
-    public ResponseEntity<List<AdvertisementEntity>> getUserAdvertisements(@RequestBody TelegramUserInfo userInfo) {
+    public ResponseEntity<List<AdvertisementDTO>> getUserAdvertisements(@RequestBody TelegramUserInfo userInfo,
+                                                                           @PathVariable("chat_id") Long chatId) {
         Long userId = userInfo.id();
 
         if (userId == null) {
@@ -40,43 +46,45 @@ public class BaraholkaBotRestController {
         }
 
         if (!controllerHelper.checkUserRights(userInfo)
-                || !controllerHelper.checkIsUserChannelMember(userId)) {
+                || !controllerHelper.checkIsUserChannelMember(chatId, userId)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
-        List<AdvertisementEntity> advertisementEntities = advertisementService.getUserAdvertisements(userId);
+        List<AdvertisementDTO> advertisementEntities = advertisementService.getUserAdvertisements(chatId, userId);
 
         return new ResponseEntity<>(advertisementEntities, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/add_advertisement",
+    @RequestMapping(method = RequestMethod.POST, value = "/add_advertisement/{chat_id}",
             headers = {"content-type=application/json"})
-    public ResponseEntity<HttpStatus> addNewAdvertisement(@RequestBody JsonNode json) {
+    public ResponseEntity<HttpStatus> addNewAdvertisement(@RequestBody JsonNode json,
+                                                          @PathVariable("chat_id") Long chatId) {
         TelegramUserInfo userInfo;
-        AdvertisementEntity advertisementEntity;
+        AdvertisementDTO advertisementDTO;
 
         try {
             userInfo = controllerHelper.getUserInfo(json);
-            advertisementEntity = controllerHelper.getAdvertisement(json);
+            advertisementDTO = controllerHelper.getAdvertisement(json);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
         if (!controllerHelper.checkUserRights(userInfo)
-                || !controllerHelper.checkIsUserChannelMember(userInfo.id())) {
+                || !controllerHelper.checkIsUserChannelMember(chatId, userInfo.id())) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
-        if (!controllerHelper.addNewAdvertisement(advertisementEntity, json)) {
+        if (!controllerHelper.addNewAdvertisement(advertisementDTO, json)) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/delete_advertisement/{message_id}",
+    @RequestMapping(method = RequestMethod.POST, value = "/delete_advertisement/chat_id={chat_id}&message_id={message_id}",
             headers = {"content-type=application/json"})
     public ResponseEntity<HttpStatus> deleteAdvertisement(@RequestBody TelegramUserInfo userInfo,
+                                                          @PathVariable("chat_id") Long chatId,
                                                           @PathVariable("message_id") Integer messageId) {
         Long userId = userInfo.id();
 
@@ -85,25 +93,26 @@ public class BaraholkaBotRestController {
         }
 
         if (!controllerHelper.checkUserRights(userInfo)
-                || !controllerHelper.checkIsUserChannelMember(userId)
-                || !controllerHelper.isUserMessageOwner(userId, messageId)) {
+                || !controllerHelper.checkIsUserChannelMember(chatId, userId)
+                || !controllerHelper.isUserMessageOwner(chatId, userId)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
         try {
-            controllerHelper.deleteMessage(messageId);
+            controllerHelper.deleteMessage(chatId, userId, messageId);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        advertisementService.removeAdvertisement(messageId);
+        advertisementService.removeAdvertisement(chatId, messageId);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/search_advertisements",
+    @RequestMapping(method = RequestMethod.POST, value = "/search_advertisements/{chat_id}",
             headers = {"content-type=application/json"})
-    public ResponseEntity<List<AdvertisementEntity>> searchAdvertisements(@RequestBody JsonNode json) {
+    public ResponseEntity<List<AdvertisementDTO>> searchAdvertisements(@RequestBody JsonNode json,
+                                                                       @PathVariable("chat_id") Long chatId) {
         TelegramUserInfo userInfo;
         List<String> tagsList;
 
@@ -121,20 +130,23 @@ public class BaraholkaBotRestController {
         }
 
         if (!controllerHelper.checkUserRights(userInfo)
-                || !controllerHelper.checkIsUserChannelMember(userId)) {
+                || !controllerHelper.checkIsUserChannelMember(chatId, userId)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
-        String[] allTags = tagsList.toArray(String[]::new);
+        List<TagDTO> allTags = tagsList.stream()
+                .map(tag -> tagService.getTagByName(tag))
+                .toList();
 
-        List<AdvertisementEntity> advertisementEntities = advertisementService.searchAdvertisementsWithTags(allTags);
+        List<AdvertisementDTO> advertisementDTOList = advertisementService.searchAdvertisementsWithTags(allTags);
 
-        return new ResponseEntity<>(advertisementEntities, HttpStatus.OK);
+        return new ResponseEntity<>(advertisementDTOList, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/all_tags",
+    @RequestMapping(method = RequestMethod.POST, value = "/all_tags/{chat_id}",
             headers = {"content-type=application/json"})
-    public ResponseEntity<AllTags> getAllTags(@RequestBody TelegramUserInfo userInfo) {
+    public ResponseEntity<Tag[]> getAllTags(@RequestBody TelegramUserInfo userInfo,
+                                            @PathVariable("chat_id") Long chatId) {
         Long userId = userInfo.id();
 
         if (userId == null) {
@@ -142,10 +154,10 @@ public class BaraholkaBotRestController {
         }
 
         if (!controllerHelper.checkUserRights(userInfo)
-                || !controllerHelper.checkIsUserChannelMember(userId)) {
+                || !controllerHelper.checkIsUserChannelMember(chatId, userId)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
-        return new ResponseEntity<>(new AllTags(), HttpStatus.OK);
+        return new ResponseEntity<>(Tag.values(), HttpStatus.OK);
     }
 }

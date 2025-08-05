@@ -3,11 +3,12 @@ package baraholkateam.command;
 import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.bots.AbsSender;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,10 +22,10 @@ public class NewAdvertisementAddContactsCommand extends BaraholkaBotCommand {
     }
 
     @Override
-    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) {
+    public void executeCommand(TelegramClient telegramClient, User user, Chat chat, Integer messageId, String[] arguments) {
         prepareReplyKeyboard(Collections.emptyList(), true);
         sendAnswer(
-                absSender,
+                telegramClient,
                 user,
                 chat,
                 Configuration.CommandMessage.ADD_CONTACTS_TEXT,
@@ -33,7 +34,7 @@ public class NewAdvertisementAddContactsCommand extends BaraholkaBotCommand {
 
         prepareAddPhoneButtons();
         sendAnswer(
-                absSender,
+                telegramClient,
                 user,
                 chat,
                 Configuration.CommandMessage.ADD_CONTACTS_QUESTION,
@@ -42,13 +43,11 @@ public class NewAdvertisementAddContactsCommand extends BaraholkaBotCommand {
     }
 
     private void prepareAddPhoneButtons() {
-        InlineKeyboardButton yesButton = new InlineKeyboardButton();
-        yesButton.setText("Да");
+        InlineKeyboardButton yesButton = new InlineKeyboardButton("Да");
         String yesCallbackData = String.format("%s %s", Configuration.CommandMessage.PHONE_CALLBACK_DATA, "yes");
         yesButton.setCallbackData(yesCallbackData);
 
-        InlineKeyboardButton noButton = new InlineKeyboardButton();
-        noButton.setText("Нет");
+        InlineKeyboardButton noButton = new InlineKeyboardButton("Нет");
         String noCallbackData = String.format("%s %s", Configuration.CommandMessage.PHONE_CALLBACK_DATA, "no");
         noButton.setCallbackData(noCallbackData);
 
@@ -56,13 +55,10 @@ public class NewAdvertisementAddContactsCommand extends BaraholkaBotCommand {
         keyboardFirstRow.add(yesButton);
         keyboardFirstRow.add(noButton);
 
-        List<List<InlineKeyboardButton>> keyboardRows = new ArrayList<>();
-        keyboardRows.add(keyboardFirstRow);
+        List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
+        keyboardRows.add(new InlineKeyboardRow(keyboardFirstRow));
 
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        inlineKeyboardMarkup.setKeyboard(keyboardRows);
-
-        replyKeyboard = inlineKeyboardMarkup;
+        replyKeyboard = new InlineKeyboardMarkup(keyboardRows);
     }
 
 }

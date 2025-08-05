@@ -1,9 +1,10 @@
 package baraholkateam.command;
 
+import baraholkateam.configuration.AdvertisementConfiguration;
 import baraholkateam.exception.BaraholkaBotException;
+import baraholkateam.rest.dto.AdvertisementDTO;
 import baraholkateam.rest.dto.ChosenTagsDTO;
 import baraholkateam.rest.dto.TagDTO;
-import baraholkateam.rest.model.AdvertisementEntity;
 import baraholkateam.rest.service.AdvertisementService;
 import baraholkateam.rest.service.ChosenTagsService;
 import baraholkateam.rest.service.StateService;
@@ -12,14 +13,13 @@ import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
 import baraholkateam.util.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
-import org.telegram.telegrambots.meta.bots.AbsSender;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +36,8 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
     private AdvertisementService advertisementService;
     @Autowired
     private StateService stateService;
-    @Value("${channel.username}")
-    private String channelUsername;
-    @Value("${search_advertisement_limit}")
-    private Integer searchAdvertisementsLimit;
+    @Autowired
+    private AdvertisementConfiguration advertisementConfiguration;
 
     public SearchAdvertisementsShowFoundAdvertisementsCommand() {
         super(Command.SearchAdvertisements_ShowFoundAdvertisements.getName(),
@@ -47,7 +45,7 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
     }
 
     @Override
-    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] arguments) throws BaraholkaBotException {
+    public void executeCommand(TelegramClient telegramClient, User user, Chat chat, Integer messageId, String[] arguments) throws BaraholkaBotException {
         ChosenTagsDTO tags = chosenTagsService.getChosenTags(chat.getId(), user.getId());
         Command previousCommand = stateService.getState(chat.getId(), user.getId()).getPreviousCommand().getCommand();
         if (previousCommand != null && previousCommand.equals(Command.SearchAdvertisements_AddProductCategories)) {
@@ -60,7 +58,7 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
             }
 
             sendAnswer(
-                    absSender,
+                    telegramClient,
                     user,
                     chat,
                     String.format(Configuration.CommandMessage.CHOSEN_HASHTAGS, hashtags)
@@ -76,7 +74,7 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
                         )
                 );
                 sendAnswer(
-                        absSender,
+                        telegramClient,
                         user,
                         chat,
                         String.format(
@@ -93,13 +91,13 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
                         )
                 );
                 sendAnswer(
-                        absSender,
+                        telegramClient,
                         user,
                         chat,
                         String.format(
                                 Configuration.CommandMessage.FOUND_ADVERTISEMENTS,
                                 count,
-                                searchAdvertisementsLimit,
+                                advertisementConfiguration.getSearchAdvertisementLimit(),
                                 Command.MainMenu.getName(),
                                 Command.SearchAdvertisements.getName()
                         ),
@@ -108,7 +106,7 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
             }
         } else {
             sendAnswer(
-                    absSender,
+                    telegramClient,
                     user,
                     chat,
                     String.format(Configuration.CommandMessage.INCORRECT_PREVIOUS_STATE, Command.MainMenu.getName())
@@ -121,28 +119,28 @@ public class SearchAdvertisementsShowFoundAdvertisementsCommand extends Baraholk
         if (tags == null || tags.getTags().isEmpty()) {
             return 0;
         }
-        List<AdvertisementEntity> sortedAds = advertisementService.searchAdvertisementsWithTags(tags.getTags());
+        List<AdvertisementDTO> sortedAdvertisementList = advertisementService.searchAdvertisementsWithTags(tags.getTags());
         int count = 0;
-        for (AdvertisementEntity sortedAd : sortedAds) {
-            telegramAPIRequests.forwardMessage(channelUsername, String.valueOf(chatId),
-                    sortedAd.getMessageId());
+        for (AdvertisementDTO sortedAdvertisement : sortedAdvertisementList) {
+            telegramAPIRequests.forwardMessage(String.valueOf(chatId), String.valueOf(chatId),
+                    sortedAdvertisement.getMessageId());
             count++;
         }
         return count;
     }
 
     private void prepareCommandButtons(List<String> commands) {
-        ReplyKeyboardMarkup rkm = new ReplyKeyboardMarkup();
-        rkm.setSelective(true);
-        rkm.setResizeKeyboard(true);
-        rkm.setOneTimeKeyboard(true);
         List<KeyboardRow> commandButtons = new ArrayList<>(commands.size());
         for (String command : commands) {
             KeyboardRow commandButton = new KeyboardRow();
             commandButton.add(new KeyboardButton(command));
             commandButtons.add(commandButton);
         }
-        rkm.setKeyboard(commandButtons);
+
+        ReplyKeyboardMarkup rkm = new ReplyKeyboardMarkup(commandButtons);
+        rkm.setSelective(true);
+        rkm.setResizeKeyboard(true);
+        rkm.setOneTimeKeyboard(true);
 
         replyKeyboard = rkm;
     }

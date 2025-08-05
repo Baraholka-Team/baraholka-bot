@@ -177,8 +177,10 @@ public final class Configuration {
     public interface AdvertisementDescriptionParts {
         String DESCRIPTION_TEXT = "Описание: ";
         String PRICE_TEXT = "Цена: %s руб.";
-        String PHONE_NUMBER = "Номер телефона: <span class=\"tg-spoiler\">%s</span>";
         String CONTACTS = "Контакты: ";
+        String PHONE_NUMBER = "Номер телефона: <span class=\"tg-spoiler\">%s</span>";
+        String EMAIL = "Email: <span class=\"tg-spoiler\">%s</span>";
+        String SOCIAL = "Соц. сеть: <span class=\"tg-spoiler\">%s</span>";
         String CONTACT = "<span class=\"tg-spoiler\">%s</span>";
     }
 
@@ -188,12 +190,14 @@ public final class Configuration {
     }
 
     public interface ErrorMessage {
-        String SERVER_MESSAGE = "На сервере возникла ошибка: %s";
+        String SERVER_MESSAGE = "На сервере возникла ошибка.";
         String NO_NEXT_COMMAND = "Для команды '%s' не было найдено следующей команды для перехода.";
         String NO_PREVIOUS_COMMAND = "Для команды '%s' не было найдено предыдущей команды для перехода.";
         String NO_COMMAND_WITH_NAME = "Команды '%s' не существует.";
         String NO_CURRENT_STATE_FOUND = "Для пользователя '%s' не было найдено текущего состояния бота.";
         String NO_MESSAGE_FOUND = "В апдейте '%s' не найдено сообщения.";
+        String NO_TAG_TYPE_FOUND = "Тип тега '%s' не существует.";
+        String NO_TAG_FOUND = "Тега '%s' не существует.";
     }
 
 }

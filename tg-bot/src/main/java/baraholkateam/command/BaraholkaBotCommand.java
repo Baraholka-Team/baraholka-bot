@@ -3,6 +3,7 @@ package baraholkateam.command;
 import baraholkateam.exception.BaraholkaBotException;
 import baraholkateam.rest.dto.CommandDTO;
 import baraholkateam.rest.dto.LastSentMessageDTO;
+import baraholkateam.rest.dto.StateDTO;
 import baraholkateam.rest.dto.TagDTO;
 import baraholkateam.rest.dto.TagTypeDTO;
 import baraholkateam.rest.service.CommandService;
@@ -14,28 +15,27 @@ import baraholkateam.util.Configuration;
 import baraholkateam.util.TagType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand;
+import org.telegram.telegrambots.extensions.bots.commandbot.commands.DefaultBotCommand;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Chat;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
-import org.telegram.telegrambots.meta.bots.AbsSender;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-@Component
-public abstract class BaraholkaBotCommand extends BotCommand {
+public abstract class BaraholkaBotCommand extends DefaultBotCommand {
 
     @Autowired
     private LastSentMessageService lastSentMessageService;
@@ -47,40 +47,43 @@ public abstract class BaraholkaBotCommand extends BotCommand {
     private TagService tagService;
     ReplyKeyboard replyKeyboard;
 
-    public BaraholkaBotCommand(String name, String description) {
-        super(name, description);
+    public BaraholkaBotCommand(String commandIdentifier, String description) {
+        super(commandIdentifier, description);
     }
 
     @Override
-    public void execute(AbsSender absSender, User user, Chat chat, String[] arguments) {
+    public void execute(TelegramClient telegramClient, User user, Chat chat, Integer messageId, String[] arguments) {
         try {
             CommandDTO currentCommand = commandService.getCommandByName(getCommandIdentifier());
-            stateService.changeCurrentState(chat.getId(), user.getId(), currentCommand);
-            executeCommand(absSender, user, chat, arguments);
+            StateDTO newStateDTO = stateService.changeCurrentState(chat.getId(), user.getId(), currentCommand);
+            executeCommand(telegramClient, user, chat, messageId, arguments);
+            newStateDTO.setIsFinished(true);
+            stateService.addState(newStateDTO);
         } catch (BaraholkaBotException e) {
-            sendErrorMessage(absSender, user, chat, e);
+            sendErrorMessage(telegramClient, user, chat, e);
         }
     }
 
     /**
      * Обрабатывает команду
-     * @param absSender обработчик команд
+     * @param telegramClient обработчик команд
      * @param user пользователь, отправивший команду
      * @param chat чат с пользователем
+     * @param messageId id сообщения
      * @param arguments аргументы команды
      * @throws BaraholkaBotException если невозможно обработать команду
      */
-    abstract void executeCommand(AbsSender absSender, User user, Chat chat, String[] arguments) throws BaraholkaBotException;
+    abstract void executeCommand(TelegramClient telegramClient, User user, Chat chat, Integer messageId, String[] arguments) throws BaraholkaBotException;
 
     /**
      * Обрабатывает введённый пользователем текст
-     * @param absSender обработчик текста
+     * @param telegramClient обработчик текста
      * @param message введённый пользователем текст
      * @return необходимо ли заново обрабатывать команду и текст возвращаемого пользователю сообщения
      * @apiNote по умолчанию возвращает переход на следующую команду и пустой текст ответного сообщения,
      * если команда не предполагает обработку ввода текста пользователя
      */
-    public TextProcessResult processUserInput(AbsSender absSender, Message message) {
+    public TextProcessResult processUserInput(TelegramClient telegramClient, Message message) {
         return new TextProcessResult(false, null);
     }
 
@@ -89,19 +92,20 @@ public abstract class BaraholkaBotCommand extends BotCommand {
      * @param message сообщение с текстом на нажатой пользователем кнопке
      * @apiNote по умолчанию не производит никаких действий,
      * если команда не предполагает обработку текста с кнопок пользователя
+     * и возвращает false
      */
-    public void processReplyKeyboardCommandText(Message message) {}
+    public void processReplyKeyboardCommandText(TelegramClient telegramClient, Message message) {}
 
-    void sendAnswer(AbsSender absSender, User user, Chat chat, String text) {
-        sendAnswer(absSender, user, chat, text, false);
+    void sendAnswer(TelegramClient telegramClient, User user, Chat chat, String text) {
+        sendAnswer(telegramClient, user, chat, text, false);
     }
 
-    void sendAnswer(AbsSender absSender, User user, Chat chat, String text, boolean withReplyKeyboard) {
+    void sendAnswer(TelegramClient telegramClient, User user, Chat chat, String text, boolean withReplyKeyboard) {
         Long chatId = chat.getId();
         SendMessage message = getSendMessage(chatId, text, withReplyKeyboard);
 
         try {
-            Message sentMessage = absSender.execute(message);
+            Message sentMessage = telegramClient.execute(message);
             LastSentMessageDTO lastSentMessageDTO = LastSentMessageDTO.builder()
                     .chatId(chatId)
                     .userId(user.getId())
@@ -114,36 +118,33 @@ public abstract class BaraholkaBotCommand extends BotCommand {
     }
 
     void prepareNextButton() {
-        ReplyKeyboardMarkup rkm = new ReplyKeyboardMarkup();
-        rkm.setSelective(true);
-        rkm.setResizeKeyboard(true);
-        rkm.setOneTimeKeyboard(true);
         List<KeyboardRow> nextList = new ArrayList<>(1);
         KeyboardRow next = new KeyboardRow();
         next.add(new KeyboardButton(Configuration.Buttons.NEXT_BUTTON));
         nextList.add(next);
 
-        KeyboardButton back = new KeyboardButton();
-        back.setText(Configuration.Buttons.BACK_BUTTON);
+        KeyboardButton back = new KeyboardButton(Configuration.Buttons.BACK_BUTTON);
         KeyboardRow line = new KeyboardRow();
         line.add(back);
         nextList.add(line);
 
-        KeyboardButton menu = new KeyboardButton();
-        menu.setText(Command.MainMenu.getDescription());
+        KeyboardButton menu = new KeyboardButton(Command.MainMenu.getDescription());
         KeyboardRow menuLine = new KeyboardRow();
         menuLine.add(menu);
         nextList.add(menuLine);
-        rkm.setKeyboard(nextList);
+
+        ReplyKeyboardMarkup rkm = new ReplyKeyboardMarkup(nextList);
+        rkm.setSelective(true);
+        rkm.setResizeKeyboard(true);
+        rkm.setOneTimeKeyboard(true);
         replyKeyboard = rkm;
     }
 
     void prepareTags(TagType tagType, Boolean isMultipleChoice) {
-        InlineKeyboardMarkup ikm = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> tags = new ArrayList<>(1);
+        List<InlineKeyboardRow> tags = new ArrayList<>(1);
         int count = 0;
         int i = 0;
-        List<InlineKeyboardButton> tagButton = new ArrayList<>(2);
+        InlineKeyboardRow tagButton = new InlineKeyboardRow(2);
         TagTypeDTO tagTypeDTO = TagTypeDTO.builder()
                 .tagTypeName(tagType)
                 .build();
@@ -165,55 +166,53 @@ public abstract class BaraholkaBotCommand extends BotCommand {
 
                 if (i++ % 2 == 1) {
                     tags.add(tagButton);
-                    tagButton = new ArrayList<>(2);
+                    tagButton = new InlineKeyboardRow(2);
                 }
             }
         }
         if (i % 2 == 1) {
             tags.add(tagButton);
         }
+
+        InlineKeyboardMarkup ikm = new InlineKeyboardMarkup(tags);
         ikm.setKeyboard(tags);
         replyKeyboard = ikm;
     }
 
-    ReplyKeyboardMarkup prepareReplyKeyboard(List<String> buttons, boolean isAddMenuButton) {
+    void prepareReplyKeyboard(List<String> buttons, boolean isAddMenuButton) {
         List<KeyboardRow> lines = prepareLines(buttons);
 
         if (isAddMenuButton) {
-            KeyboardButton menu = new KeyboardButton();
-            menu.setText(Command.MainMenu.getDescription());
+            KeyboardButton menu = new KeyboardButton(Command.MainMenu.getDescription());
             KeyboardRow menuLine = new KeyboardRow();
             menuLine.add(menu);
             lines.add(menuLine);
         }
 
-        ReplyKeyboardMarkup rkm = new ReplyKeyboardMarkup();
-        rkm.setKeyboard(lines);
+        ReplyKeyboardMarkup rkm = new ReplyKeyboardMarkup(lines);
         rkm.setResizeKeyboard(true);
-        return rkm;
+
+        replyKeyboard = rkm;
     }
 
-    void sendErrorMessage(AbsSender absSender, User user, Chat chat, Exception e) {
-        sendAnswer(absSender, user, chat, Configuration.ErrorMessage.SERVER_MESSAGE.formatted(e.getMessage()));
+    void sendErrorMessage(TelegramClient telegramClient, User user, Chat chat, Exception e) {
+        log.error(Configuration.ErrorMessage.SERVER_MESSAGE, e);
+        sendAnswer(telegramClient, user, chat, Configuration.ErrorMessage.SERVER_MESSAGE);
     }
 
     private SendMessage getSendMessage(Long chatId, String text, boolean withReplyKeyboard) {
-        SendMessage message = new SendMessage();
-        message.setChatId(chatId.toString());
+        SendMessage message = new SendMessage(chatId.toString(), text);
         message.setParseMode(ParseMode.HTML);
-        message.setText(text);
         message.disableWebPagePreview();
         if (withReplyKeyboard && replyKeyboard != null) {
             message.setReplyMarkup(replyKeyboard);
         } else {
-            KeyboardButton back = new KeyboardButton();
-            back.setText(Configuration.Buttons.BACK_BUTTON);
+            KeyboardButton back = new KeyboardButton(Configuration.Buttons.BACK_BUTTON);
             KeyboardRow line = new KeyboardRow();
             line.add(back);
             List<KeyboardRow> lines = new ArrayList<>(1);
             lines.add(line);
-            ReplyKeyboardMarkup rkm = new ReplyKeyboardMarkup();
-            rkm.setKeyboard(lines);
+            ReplyKeyboardMarkup rkm = new ReplyKeyboardMarkup(lines);
             rkm.setResizeKeyboard(true);
             message.setReplyMarkup(rkm);
         }
@@ -240,8 +239,7 @@ public abstract class BaraholkaBotCommand extends BotCommand {
         if (buttons.size() > 1 && buttons.size() % 2 == 1) {
             lines.add(line);
         }
-        KeyboardButton back = new KeyboardButton();
-        back.setText(Configuration.Buttons.BACK_BUTTON);
+        KeyboardButton back = new KeyboardButton(Configuration.Buttons.BACK_BUTTON);
         line = new KeyboardRow();
         line.add(back);
         lines.add(line);

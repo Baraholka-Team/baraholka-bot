@@ -2,7 +2,6 @@ package baraholkateam.command;
 
 import baraholkateam.rest.dto.AdvertisementDTO;
 import baraholkateam.rest.service.AdvertisementService;
-import baraholkateam.rest.service.ChosenTagsService;
 import baraholkateam.rest.service.TagService;
 import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
@@ -10,9 +9,9 @@ import baraholkateam.util.Tag;
 import baraholkateam.util.TagType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.bots.AbsSender;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.Collections;
 
@@ -22,8 +21,6 @@ public class NewAdvertisementAddCityCommand extends BaraholkaBotCommand {
     @Autowired
     private AdvertisementService advertisementService;
     @Autowired
-    private ChosenTagsService chosenTagsService;
-    @Autowired
     private TagService tagService;
 
     public NewAdvertisementAddCityCommand() {
@@ -31,14 +28,14 @@ public class NewAdvertisementAddCityCommand extends BaraholkaBotCommand {
     }
 
     @Override
-    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) {
+    public void executeCommand(TelegramClient telegramClient, User user, Chat chat, Integer messageId, String[] arguments) {
         AdvertisementDTO advertisementDTO = advertisementService.getLastUserAdvertisement(chat.getId(), user.getId());
         advertisementDTO.addTag(tagService.getTagByName(Tag.Actual.getName()));
         advertisementService.saveNewAdvertisement(advertisementDTO);
 
         prepareReplyKeyboard(Collections.emptyList(), true);
         sendAnswer(
-                absSender,
+                telegramClient,
                 user,
                 chat,
                 Configuration.CommandMessage.ADD_HASHTAGS_TEXT,
@@ -47,7 +44,7 @@ public class NewAdvertisementAddCityCommand extends BaraholkaBotCommand {
 
         prepareTags(TagType.City, false);
         sendAnswer(
-                absSender,
+                telegramClient,
                 user,
                 chat,
                 Configuration.CommandMessage.ADD_CITY_TEXT,

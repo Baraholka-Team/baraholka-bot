@@ -10,8 +10,16 @@ public class BaraholkaBotException extends Exception {
         super(message);
     }
 
-    public BaraholkaBotException(String message, Throwable cause) {
+    public BaraholkaBotException(String message, Object... parameters) {
+        super(message.formatted(parameters));
+    }
+
+    public BaraholkaBotException(Throwable cause, String message) {
         super(message, cause);
+    }
+
+    public BaraholkaBotException(Throwable cause, String message, Object... parameters) {
+        super(message.formatted(parameters), cause);
     }
 
 }

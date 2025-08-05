@@ -9,8 +9,8 @@ import baraholkateam.rest.model.StateEntityId;
 import baraholkateam.rest.repository.StateRepository;
 import baraholkateam.util.Command;
 import baraholkateam.util.Configuration;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -19,11 +19,10 @@ import java.util.Optional;
  * Сервис для работы с состояниями бота
  */
 @Service
+@AllArgsConstructor
 public class StateService {
 
-    @Autowired
     private StateRepository stateRepository;
-    @Autowired
     private CommandService commandService;
 
     /**
@@ -53,33 +52,37 @@ public class StateService {
      * @param chatId id чата
      * @param userId id пользователя
      * @param currentCommandDTO текущая команда пользователя
+     * @return новое состояние бота для чата и пользователя
      * @throws BaraholkaBotException если невозможно получить состояние бота или состояние не корректное
      */
-    public void changeCurrentState(@NotNull Long chatId,
+    public StateDTO changeCurrentState(@NotNull Long chatId,
                                    @NotNull Long userId,
                                    @NotNull CommandDTO currentCommandDTO) throws BaraholkaBotException {
         Optional<StateEntity> stateEntityOptional = stateRepository.findById(new StateEntityId(chatId, userId));
+        StateDTO stateDTO;
         if (stateEntityOptional.isPresent()) {
-            StateDTO stateDTO = StateMapper.getStateDTO(stateEntityOptional.get());
+            stateDTO = StateMapper.getStateDTO(stateEntityOptional.get());
             if (stateDTO.getCurrentCommand() != null) {
                 stateDTO.setPreviousCommand(stateDTO.getCurrentCommand());
+                stateDTO.setCurrentCommand(currentCommandDTO);
+                stateDTO.setIsFinished(false);
+                stateDTO.setIsRepeat(false);
             } else {
                 throw new BaraholkaBotException(
                         Configuration.ErrorMessage.NO_CURRENT_STATE_FOUND.formatted(userId)
                 );
             }
-            stateDTO.setCurrentCommand(currentCommandDTO);
-            stateRepository.save(StateMapper.getStateEntity(stateDTO));
         } else {
             CommandDTO previousCommandDTO = commandService.getCommandByName(Command.Start.getName());
-            StateDTO newStateDTO = StateDTO.builder()
+            stateDTO = StateDTO.builder()
                     .chatId(chatId)
                     .userId(userId)
                     .currentCommand(currentCommandDTO)
                     .previousCommand(previousCommandDTO)
                     .build();
-            stateRepository.save(StateMapper.getStateEntity(newStateDTO));
         }
+        StateEntity newState = stateRepository.save(StateMapper.getStateEntity(stateDTO));
+        return StateMapper.getStateDTO(newState);
     }
 
     /**

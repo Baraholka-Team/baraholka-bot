@@ -6,9 +6,9 @@ import baraholkateam.util.Configuration;
 import baraholkateam.util.TagType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.bots.AbsSender;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.Objects;
 
@@ -24,7 +24,7 @@ public class NewAdvertisementAddCategoriesCommand extends BaraholkaBotCommand {
     }
 
     @Override
-    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) {
+    public void executeCommand(TelegramClient telegramClient, User user, Chat chat, Integer messageId, String[] arguments) {
         String chosenAdvertisementTypeTags = advertisementService.getLastUserAdvertisement(chat.getId(), user.getId())
                 .getTagsOfType(TagType.AdvertisementType);
         if (Objects.equals(chosenAdvertisementTypeTags, "")) {
@@ -33,7 +33,7 @@ public class NewAdvertisementAddCategoriesCommand extends BaraholkaBotCommand {
 
         prepareNextButton();
         sendAnswer(
-                absSender,
+                telegramClient,
                 user,
                 chat,
                 String.format(
@@ -45,7 +45,7 @@ public class NewAdvertisementAddCategoriesCommand extends BaraholkaBotCommand {
 
         prepareTags(TagType.ProductCategories, true);
         sendAnswer(
-                absSender,
+                telegramClient,
                 user,
                 chat,
                 Configuration.CommandMessage.ADD_CATEGORIES_TEXT,

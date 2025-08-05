@@ -6,9 +6,9 @@ import baraholkateam.util.Configuration;
 import baraholkateam.util.TagType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.bots.AbsSender;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 @Component
 public class NewAdvertisementAddAdvertisementTypesCommand extends BaraholkaBotCommand {
@@ -22,10 +22,10 @@ public class NewAdvertisementAddAdvertisementTypesCommand extends BaraholkaBotCo
     }
 
     @Override
-    public void executeCommand(AbsSender absSender, User user, Chat chat, String[] strings) {
+    public void executeCommand(TelegramClient telegramClient, User user, Chat chat, Integer messageId, String[] arguments) {
         prepareNextButton();
         sendAnswer(
-                absSender,
+                telegramClient,
                 user,
                 chat,
                 String.format(Configuration.CommandMessage.CHOSEN_CITY, advertisementService.getLastUserAdvertisement(chat.getId(), user.getId()).getTagsOfType(TagType.City)),
@@ -33,7 +33,7 @@ public class NewAdvertisementAddAdvertisementTypesCommand extends BaraholkaBotCo
         );
 
         prepareTags(TagType.AdvertisementType, true);
-        sendAnswer(absSender, user, chat, Configuration.CommandMessage.ADD_TYPE_TEXT, true);
+        sendAnswer(telegramClient, user, chat, Configuration.CommandMessage.ADD_TYPE_TEXT, true);
     }
 
 }

@@ -27,5 +27,11 @@ public class StateDTO implements Serializable {
     private CommandDTO currentCommand;
     @JsonProperty("previous_command")
     private CommandDTO previousCommand;
+    @JsonProperty("is_finished")
+    @Builder.Default
+    private Boolean isFinished = false;
+    @JsonProperty("is_repeat")
+    @Builder.Default
+    private Boolean isRepeat = false;
 
 }

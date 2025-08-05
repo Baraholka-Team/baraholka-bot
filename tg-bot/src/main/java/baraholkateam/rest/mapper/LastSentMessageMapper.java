@@ -3,7 +3,7 @@ package baraholkateam.rest.mapper;
 import baraholkateam.rest.dto.LastSentMessageDTO;
 import baraholkateam.rest.model.LastSentMessageEntity;
 import baraholkateam.rest.model.LastSentMessageEntityId;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
 /**
@@ -26,12 +26,13 @@ public class LastSentMessageMapper {
     }
 
     public static LastSentMessageDTO getLastSentMessageDTO(LastSentMessageEntity lastSentMessageEntity) {
-        Message message = new Message();
-        message.setMessageId(lastSentMessageEntity.getMessageId());
-        message.setText(lastSentMessageEntity.getMessageText());
-        if (lastSentMessageEntity.getHasReplyMarkup()) {
-            message.setReplyMarkup(new InlineKeyboardMarkup());
-        }
+        Message message = Message.builder()
+                .messageId(lastSentMessageEntity.getMessageId())
+                .text(lastSentMessageEntity.getMessageText())
+                .replyMarkup(lastSentMessageEntity.getHasReplyMarkup()
+                        ? InlineKeyboardMarkup.builder().build()
+                        : null)
+                .build();
 
         return LastSentMessageDTO.builder()
                 .chatId(lastSentMessageEntity.getLastSentMessageEntityId().getChatId())
